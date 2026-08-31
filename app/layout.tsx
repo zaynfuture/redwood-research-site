@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   title: 'Redwood - U.S. Equity Research Platform',
   description: 'A local-first, evidence-led, and auditable U.S. equity research platform.',
   icons: {
-    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
-    shortcut: '/icon.svg',
+    icon: [{ url: '/icon.svg?v=2', type: 'image/svg+xml' }],
+    shortcut: '/icon.svg?v=2',
   },
   openGraph: {
     title: 'Redwood - U.S. Equity Research Platform',

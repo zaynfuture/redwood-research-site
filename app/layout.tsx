@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://redwoodresearch.cortexhubs.com'),
   title: 'Redwood - U.S. Equity Research Platform',
   description: 'A local-first, evidence-led, and auditable U.S. equity research platform.',
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    shortcut: '/icon.svg',
+  },
   openGraph: {
     title: 'Redwood - U.S. Equity Research Platform',
     description: 'Evidence-led research, rooted locally.',

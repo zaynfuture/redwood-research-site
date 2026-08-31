@@ -66,12 +66,12 @@ export default function Home() {
             <div className="console-topbar">
               <div className="flex items-center gap-2"><span className="terminal-dot" /><span className="terminal-dot" /><span className="terminal-dot" /></div>
               <span className="font-mono text-[10px] tracking-[0.18em] text-white/45">REDWOOD / RESEARCH RUN</span>
-              <span className="rounded-full border border-white/10 px-2 py-1 font-mono text-[9px] text-[#e7a293]">LIVE</span>
+              <span className="rounded-full border border-white/10 px-2 py-1 font-mono text-[9px] text-[#e7a293]">ILLUSTRATIVE</span>
             </div>
             <div className="p-5 sm:p-7">
               <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">
                 <div><p className="font-mono text-[10px] tracking-[0.14em] text-white/40">COMPANY UNDER REVIEW</p><h2 className="mt-2 text-2xl font-medium text-white">NVIDIA <span className="text-white/35">/ NVDA</span></h2></div>
-                <div className="text-right"><p className="font-mono text-[10px] text-white/40">AS OF</p><p className="mt-2 font-mono text-xs text-white/75">2026.08.31</p></div>
+                <div className="text-right"><p className="font-mono text-[10px] text-white/40">WORKFLOW</p><p className="mt-2 font-mono text-xs text-white/75">SAMPLE</p></div>
               </div>
               <div className="my-5 grid grid-cols-3 gap-2">
                 {agents.map((agent, i) => (
@@ -94,14 +94,14 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="console-footer"><span>Coordinator synthesizing evidence</span><span className="loading-line"><i /></span><span>74%</span></div>
+            <div className="console-footer"><span>Coordinator synthesizing evidence</span><span className="loading-line"><i /></span><span>REVIEW</span></div>
           </div>
         </div>
       </section>
 
       <section className="border-y border-border bg-[#f1eee8]">
         <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-border px-6 md:grid-cols-4 lg:px-10">
-          {[['04', 'Local knowledge domains'], ['05+2', 'Company research framework'], ['100%', 'Traceable evidence'], ['0', 'Trade execution']].map(([n,l]) => <div key={l} className="stat"><strong>{n}</strong><span>{l}</span></div>)}
+          {[['04', 'Local knowledge domains'], ['05+2', 'Company research framework'], ['BY DESIGN', 'Traceable evidence'], ['0', 'Trade execution']].map(([n,l]) => <div key={l} className="stat"><strong>{n}</strong><span>{l}</span></div>)}
         </div>
       </section>
 

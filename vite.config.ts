@@ -4,9 +4,7 @@ import vinext from 'vinext';
 import { defineConfig } from 'vite';
 import hostingConfig from './.openai/hosting.json';
 
-const REDWOOD_WAITLIST_DATABASE_ID = '9d354795-a017-4602-bdeb-83a3040426b4';
-
-const { d1, r2 } = hostingConfig;
+const { r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === 'seatbelt';
@@ -26,15 +24,6 @@ const localBindingConfig = {
   observability: {
     enabled: true,
   },
-  d1_databases: d1
-    ? [
-        {
-          binding: d1,
-          database_name: 'redwood-waitlist',
-          database_id: REDWOOD_WAITLIST_DATABASE_ID,
-        },
-      ]
-    : [],
   r2_buckets: r2
     ? [
         {

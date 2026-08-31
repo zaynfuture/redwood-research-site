@@ -4,6 +4,9 @@ Redwood is an English-language product site for a local-first U.S. equity resear
 public site explains the product philosophy and research workflow without publishing private research,
 credentials, operational infrastructure, proprietary prompts, scoring parameters, or customer data.
 
+The interface supports English, Simplified Chinese, and Traditional Chinese. Language selection is
+stored only in the visitor's browser and also updates the document language for accessibility.
+
 ## Public product principles
 
 - Evidence before opinion

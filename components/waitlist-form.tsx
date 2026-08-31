@@ -47,9 +47,25 @@ export function WaitlistForm({ source, inverted = false }: WaitlistFormProps) {
       });
       const data = (await response.json()) as { ok: boolean; message?: string; error?: string };
       if (!response.ok || !data.ok) throw new Error(data.error ?? 'Unable to send your request.');
+
+      const subject = `Redwood private beta request — ${value('name')}`;
+      const body = [
+        'Hello Redwood team,',
+        '',
+        'I would like to request access to the Redwood private beta.',
+        '',
+        `Name: ${value('name')}`,
+        `Email: ${value('email')}`,
+        `Company: ${value('company') || 'Not provided'}`,
+        '',
+        'What I am looking for:',
+        value('message') || 'Not provided',
+      ].join('\n');
+
       formElement.reset();
       setStatus('success');
-      setMessage(data.message ?? 'Thanks — your request has been received.');
+      setMessage('Your email draft is ready. Review it in your email app, then press Send.');
+      window.location.href = `mailto:request@cortexhubs.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     } catch (error) {
       setStatus('error');
       setMessage(error instanceof Error ? error.message : 'Unable to send your request.');
@@ -65,7 +81,7 @@ export function WaitlistForm({ source, inverted = false }: WaitlistFormProps) {
         {status === 'success' ? (
           <output className="beta-success">
             <span><Check size={22} /></span>
-            <DialogTitle>Request received</DialogTitle>
+            <DialogTitle>Email draft opened</DialogTitle>
             <DialogDescription>{message}</DialogDescription>
           </output>
         ) : (
@@ -73,7 +89,7 @@ export function WaitlistForm({ source, inverted = false }: WaitlistFormProps) {
             <DialogHeader>
               <span className="section-index">PRIVATE BETA / REDWOOD</span>
               <DialogTitle className="beta-title">Tell us about yourself.</DialogTitle>
-              <DialogDescription>Share a few details and we’ll get back to you personally.</DialogDescription>
+              <DialogDescription>Share a few details, then send the prepared email from your email app.</DialogDescription>
             </DialogHeader>
             <form className="beta-form" onSubmit={submit}>
               <div className="beta-field-row">
@@ -85,9 +101,9 @@ export function WaitlistForm({ source, inverted = false }: WaitlistFormProps) {
               <input className="hidden" name="fax" tabIndex={-1} autoComplete="off" aria-hidden="true" />
               {status === 'error' && <p className="beta-error" role="alert">{message}</p>}
               <button className="beta-submit" type="submit" disabled={status === 'submitting'}>
-                {status === 'submitting' ? <><span className="submit-spinner" /> Sending request</> : <>Send request <ArrowRight size={17} /></>}
+                {status === 'submitting' ? <><span className="submit-spinner" /> Preparing email</> : <>Continue to email <ArrowRight size={17} /></>}
               </button>
-              <p className="beta-privacy">Your details are used only to respond to this private beta request.</p>
+              <p className="beta-privacy">This opens your email app with a message addressed to request@cortexhubs.com.</p>
             </form>
           </>
         )}

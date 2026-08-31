@@ -13,8 +13,20 @@ const { d1, r2 } = hostingConfig;
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === 'seatbelt';
 
 const localBindingConfig = {
+  name: 'redwood-research',
   main: 'vinext/server/fetch-handler',
+  compatibility_date: '2026-08-31',
   compatibility_flags: ['nodejs_compat'],
+  workers_dev: true,
+  routes: [
+    {
+      pattern: 'redwoodresearch.cortexhubs.com',
+      custom_domain: true,
+    },
+  ],
+  observability: {
+    enabled: true,
+  },
   d1_databases: d1
     ? [
         {

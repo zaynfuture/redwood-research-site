@@ -1,4 +1,5 @@
-import { ArrowRight, BarChart3, BrainCircuit, CheckCircle2, Database, FileSearch, GitBranch, Layers3, LockKeyhole, Radar, ShieldCheck, Waypoints } from 'lucide-react';
+import { ArrowRight, BarChart3, BrainCircuit, CheckCircle2, Database, FileSearch, GitBranch, LockKeyhole, ShieldCheck, Waypoints } from 'lucide-react';
+import { WaitlistForm } from '@/components/waitlist-form';
 
 const agents = [
   { name: 'Fundamentals', detail: 'Statements · Quality · ROIC', tone: 'bg-[#f7d9d2] text-[#8c2f20]' },
@@ -36,7 +37,7 @@ export default function Home() {
           <a className="nav-link" href="#capabilities">Capabilities</a>
           <a className="nav-link" href="#principles">Principles</a>
         </div>
-        <a href="#contact" className="button button-outline">Join private beta <ArrowRight size={15} /></a>
+        <WaitlistForm source="header" />
       </nav>
 
       <section id="top" className="mx-auto grid max-w-7xl items-center gap-16 px-6 pb-24 pt-16 lg:grid-cols-[0.92fr_1.08fr] lg:px-10 lg:pb-32 lg:pt-24">
@@ -149,7 +150,7 @@ export default function Home() {
           <span className="section-index text-white/35">PRIVATE BETA / 2026</span>
           <h2 className="mt-7 text-5xl font-medium leading-[.95] tracking-[-.06em] text-white sm:text-7xl">Built for investors<br />who go <span className="serif-italic text-[#dc8473]">deep.</span></h2>
           <p className="mx-auto mt-7 max-w-xl text-base leading-7 text-white/50">Redwood is evolving in private beta with investors who value evidence, process, and long-term thinking.</p>
-          <a href="#top" className="button mt-9 bg-[#f6f1e8] px-6 text-[#1c1d1a] hover:bg-white">Follow Redwood <ArrowRight size={17}/></a>
+          <div className="mx-auto mt-9 max-w-md"><WaitlistForm source="footer" inverted /></div>
         </div>
       </section>
 

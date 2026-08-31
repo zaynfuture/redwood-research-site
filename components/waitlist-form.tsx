@@ -1,7 +1,15 @@
 'use client';
 
 import { ArrowRight, Check } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 type WaitlistFormProps = {
   source: 'header' | 'footer';
@@ -9,18 +17,17 @@ type WaitlistFormProps = {
 };
 
 export function WaitlistForm({ source, inverted = false }: WaitlistFormProps) {
-  const inputId = useId();
-  const [expanded, setExpanded] = useState(source === 'footer');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
   async function submit(event: { preventDefault(): void; currentTarget: HTMLFormElement }) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const emailValue = form.get('email');
-    const companyValue = form.get('company');
-    const email = typeof emailValue === 'string' ? emailValue.trim() : '';
-    const company = typeof companyValue === 'string' ? companyValue : '';
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    const value = (key: string) => {
+      const item = form.get(key);
+      return typeof item === 'string' ? item.trim() : '';
+    };
 
     setStatus('submitting');
     setMessage('');
@@ -29,35 +36,62 @@ export function WaitlistForm({ source, inverted = false }: WaitlistFormProps) {
       const response = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, company, source }),
+        body: JSON.stringify({
+          name: value('name'),
+          email: value('email'),
+          company: value('company'),
+          message: value('message'),
+          fax: value('fax'),
+          source,
+        }),
       });
       const data = (await response.json()) as { ok: boolean; message?: string; error?: string };
-      if (!response.ok || !data.ok) throw new Error(data.error ?? 'Unable to join right now.');
+      if (!response.ok || !data.ok) throw new Error(data.error ?? 'Unable to send your request.');
+      formElement.reset();
       setStatus('success');
-      setMessage(data.message ?? 'You’re on the list.');
+      setMessage(data.message ?? 'Thanks — your request has been received.');
     } catch (error) {
       setStatus('error');
-      setMessage(error instanceof Error ? error.message : 'Unable to join right now.');
+      setMessage(error instanceof Error ? error.message : 'Unable to send your request.');
     }
   }
 
-  if (status === 'success') {
-    return <output className={`waitlist-success ${inverted ? 'waitlist-inverted' : ''}`}><Check size={17} /> {message}</output>;
-  }
-
-  if (!expanded) {
-    return <button type="button" className="button button-outline" onClick={() => setExpanded(true)} aria-expanded="false">Join private beta <ArrowRight size={15} /></button>;
-  }
-
   return (
-    <form className={`waitlist-form ${inverted ? 'waitlist-inverted' : ''}`} onSubmit={submit} noValidate>
-      <label className="sr-only" htmlFor={inputId}>Email address</label>
-      <input id={inputId} name="email" type="email" inputMode="email" autoComplete="email" placeholder="you@company.com" required maxLength={254} />
-      <input className="hidden" name="company" tabIndex={-1} autoComplete="off" aria-hidden="true" />
-      <button type="submit" disabled={status === 'submitting'} aria-label="Join the Redwood private beta">
-        {status === 'submitting' ? <span className="submit-spinner" /> : <ArrowRight size={18} />}
-      </button>
-      {status === 'error' && <p className="waitlist-error" role="alert">{message}</p>}
-    </form>
+    <Dialog onOpenChange={(open) => { if (!open && status !== 'submitting') { setStatus('idle'); setMessage(''); } }}>
+      <DialogTrigger className={inverted ? 'button beta-trigger beta-trigger-inverted' : 'button button-outline'}>
+        Join private beta <ArrowRight size={16} />
+      </DialogTrigger>
+      <DialogContent className="beta-dialog" showCloseButton={status !== 'submitting'}>
+        {status === 'success' ? (
+          <output className="beta-success">
+            <span><Check size={22} /></span>
+            <DialogTitle>Request received</DialogTitle>
+            <DialogDescription>{message}</DialogDescription>
+          </output>
+        ) : (
+          <>
+            <DialogHeader>
+              <span className="section-index">PRIVATE BETA / REDWOOD</span>
+              <DialogTitle className="beta-title">Tell us about yourself.</DialogTitle>
+              <DialogDescription>Share a few details and we’ll get back to you personally.</DialogDescription>
+            </DialogHeader>
+            <form className="beta-form" onSubmit={submit}>
+              <div className="beta-field-row">
+                <label><span>Name *</span><input name="name" type="text" autoComplete="name" placeholder="Your name" maxLength={100} required /></label>
+                <label><span>Email *</span><input name="email" type="email" inputMode="email" autoComplete="email" placeholder="you@company.com" maxLength={254} required /></label>
+              </div>
+              <label><span>Company <i>optional</i></span><input name="company" type="text" autoComplete="organization" placeholder="Company or fund" maxLength={160} /></label>
+              <label><span>What are you looking for? <i>optional</i></span><textarea name="message" placeholder="Tell us about your research workflow or what you’d like to explore with Redwood." rows={4} maxLength={2000} /></label>
+              <input className="hidden" name="fax" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+              {status === 'error' && <p className="beta-error" role="alert">{message}</p>}
+              <button className="beta-submit" type="submit" disabled={status === 'submitting'}>
+                {status === 'submitting' ? <><span className="submit-spinner" /> Sending request</> : <>Send request <ArrowRight size={17} /></>}
+              </button>
+              <p className="beta-privacy">Your details are used only to respond to this private beta request.</p>
+            </form>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

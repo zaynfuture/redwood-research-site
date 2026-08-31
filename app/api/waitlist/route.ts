@@ -1,31 +1,41 @@
-import { addWaitlistEmail } from '@/lib/waitlist';
+import { savePrivateBetaRequest } from '@/lib/waitlist';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function clean(value: unknown, maxLength: number) {
+  return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
+}
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
+      name?: unknown;
       email?: unknown;
-      source?: unknown;
       company?: unknown;
+      message?: unknown;
+      source?: unknown;
+      fax?: unknown;
     };
 
-    if (body.company) {
+    if (body.fax) {
       return Response.json({ ok: true }, { status: 201 });
     }
 
-    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
-    const source = typeof body.source === 'string' ? body.source.slice(0, 40) : 'website';
+    const name = clean(body.name, 100);
+    const email = clean(body.email, 254).toLowerCase();
+    const company = clean(body.company, 160);
+    const message = clean(body.message, 2000);
+    const source = clean(body.source, 40) || 'website';
 
-    if (!email || email.length > 254 || !EMAIL_PATTERN.test(email)) {
+    if (!name) {
+      return Response.json({ ok: false, error: 'Please enter your name.' }, { status: 400 });
+    }
+    if (!email || !EMAIL_PATTERN.test(email)) {
       return Response.json({ ok: false, error: 'Please enter a valid email address.' }, { status: 400 });
     }
 
-    const { created } = await addWaitlistEmail(email, source);
-    return Response.json(
-      { ok: true, message: created ? 'You’re on the list.' : 'You’re already on the list.' },
-      { status: created ? 201 : 200 },
-    );
+    await savePrivateBetaRequest({ name, email, company, message, source });
+    return Response.json({ ok: true, message: 'Thanks — your request has been received.' }, { status: 201 });
   } catch (error) {
     console.error(JSON.stringify({
       message: 'waitlist_signup_failed',

@@ -1,4 +1,4 @@
-import { ArrowRight, BarChart3, BrainCircuit, CheckCircle2, Database, FileSearch, GitBranch, LockKeyhole, ShieldCheck, Waypoints } from 'lucide-react';
+import { ArrowRight, BarChart3, BrainCircuit, BriefcaseBusiness, CheckCircle2, Database, FileSearch, GitBranch, LockKeyhole, Mail, MessageSquare, ShieldCheck, Waypoints } from 'lucide-react';
 import { WaitlistForm } from '@/components/waitlist-form';
 
 const agents = [
@@ -22,6 +22,15 @@ const capabilities = [
   { icon: Waypoints, title: 'Financial research ontology', text: 'Unify companies, securities, metrics, and relationships while keeping matched, ambiguous, and unresolved identities explicit.' },
   { icon: GitBranch, title: 'Auditable evidence chain', text: 'Every material claim can resolve to an original document, precise locator, and evidence class—ready to challenge, verify, and update.' },
   { icon: ShieldCheck, title: 'Read-only safety boundary', text: 'Redwood supports research and risk understanding, never order execution. Sensitive credentials stay outside model context and outputs.' },
+  { icon: Mail, title: 'Email & messaging delivery', text: 'Deliver scheduled research and agent-triggered updates through email or approved third-party instant-messaging channels.' },
+  { icon: BriefcaseBusiness, title: 'Portfolio intelligence', text: 'Produce full-view asset statistics, evaluation reports, and IBKR holdings-risk reviews with privacy-safe presentation controls.' },
+];
+
+const highlights = [
+  { value: '4+', label: 'Extensible knowledge domains', detail: 'Self-managed local collections, expandable to trusted third-party data sources' },
+  { value: '5+2', label: 'Multiple research frameworks', detail: 'Valuation, Goldman Sachs research synthesis, 5+2 analysis, and more' },
+  { value: 'BY DESIGN', label: 'Traceable evidence', detail: 'Claims retain provenance, context, and visible uncertainty' },
+  { value: 'TRIGGERED', label: 'Workflow automation', detail: 'Scheduled and agent-triggered research runs without autonomous order execution' },
 ];
 
 export default function Home() {
@@ -35,6 +44,7 @@ export default function Home() {
         <div className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
           <a className="nav-link" href="#framework">Framework</a>
           <a className="nav-link" href="#capabilities">Capabilities</a>
+          <a className="nav-link" href="#cases">Cases</a>
           <a className="nav-link" href="#principles">Principles</a>
         </div>
         <WaitlistForm source="header" />
@@ -101,7 +111,7 @@ export default function Home() {
 
       <section className="border-y border-border bg-[#f1eee8]">
         <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-border px-6 md:grid-cols-4 lg:px-10">
-          {[['04', 'Local knowledge domains'], ['05+2', 'Company research framework'], ['BY DESIGN', 'Traceable evidence'], ['0', 'Trade execution']].map(([n,l]) => <div key={l} className="stat"><strong>{n}</strong><span>{l}</span></div>)}
+          {highlights.map(({ value, label, detail }) => <div key={label} className="stat"><strong>{value}</strong><span>{label}</span><small>{detail}</small></div>)}
         </div>
       </section>
 
@@ -134,8 +144,39 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="cases" className="case-section border-b border-border">
+        <div className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36">
+          <div className="case-heading">
+            <div><span className="section-index">03 / PRIVACY-SAFE CASES</span><h2 className="section-title">Useful at portfolio scale.<br /><span className="serif-italic text-primary">Private by construction.</span></h2></div>
+            <p className="section-copy">Illustrative report layouts show how Redwood communicates portfolio findings. Sensitive fields are replaced with non-recoverable mosaic placeholders—no live account or position data is embedded in this page.</p>
+          </div>
+          <div className="case-grid">
+            <article className="case-card">
+              <div className="case-card-top"><span>CASE 01</span><span>FULL-VIEW ASSET REPORT</span></div>
+              <div className="report-preview">
+                <div className="report-title"><div><small>HOUSEHOLD / CONSOLIDATED</small><h3>Asset statistics & evaluation</h3></div><span className="privacy-chip"><ShieldCheck size={13}/> MOSAICED</span></div>
+                <div className="masked-grid"><div><small>Owner</small><i className="mosaic mosaic-short"/></div><div><small>Total assets</small><i className="mosaic"/></div><div><small>Report date</small><i className="mosaic mosaic-short"/></div></div>
+                <div className="allocation-bars" aria-label="Illustrative allocation chart"><i style={{width:'82%'}}/><i style={{width:'64%'}}/><i style={{width:'47%'}}/><i style={{width:'29%'}}/></div>
+                <div className="report-tags"><span>Brokerage</span><span>Banking</span><span>Pension</span><span>Cash</span><span>Risk R1–R5</span></div>
+              </div>
+              <p>Consolidates asset classes, liquidity, currency exposure, allocation, and risk bands into one reconciled view.</p>
+            </article>
+            <article className="case-card">
+              <div className="case-card-top"><span>CASE 02</span><span>IBKR HOLDINGS RISK</span></div>
+              <div className="report-preview report-preview-dark">
+                <div className="report-title"><div><small>PORTFOLIO / RISK REVIEW</small><h3>Holdings risk assessment</h3></div><span className="privacy-chip"><ShieldCheck size={13}/> MOSAICED</span></div>
+                <div className="masked-grid"><div><small>Account</small><i className="mosaic mosaic-short"/></div><div><small>Net liquidation</small><i className="mosaic"/></div><div><small>Top position</small><i className="mosaic mosaic-short"/></div></div>
+                <div className="risk-list"><span><i/>Concentration & overlap</span><span><i/>Options expiry & liquidity</span><span><i/>Margin, FX & drawdown risk</span></div>
+                <div className="integration-row"><Mail size={14}/><span>Email</span><MessageSquare size={14}/><span>Third-party IM</span></div>
+              </div>
+              <p>Turns a read-only holdings snapshot into prioritized risk observations and scheduled or agent-triggered delivery.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section id="principles" className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36">
-        <span className="section-index">03 / PRODUCT PRINCIPLES</span>
+        <span className="section-index">04 / PRODUCT PRINCIPLES</span>
         <div className="mt-8 grid gap-14 lg:grid-cols-[1fr_1.15fr]">
           <h2 className="section-title">AI can accelerate research.<br /><span className="serif-italic text-primary">It cannot replace accountability.</span></h2>
           <div className="principle-list">

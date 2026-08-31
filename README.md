@@ -10,6 +10,10 @@ credentials, operational infrastructure, proprietary prompts, scoring parameters
 - A structured 5+2 company-research workflow
 - Specialist research roles coordinated under one evidence standard
 - Reproducible financial calculations and traceable claims
+- Extensible self-managed knowledge domains with optional trusted third-party sources
+- Valuation, institutional research synthesis, and 5+2 company analysis
+- Scheduled and agent-triggered workflows with email and approved messaging delivery
+- Privacy-safe full-view asset and IBKR holdings-risk reporting
 - Visible uncertainty and human accountability
 - Research-only operation with no order execution
 

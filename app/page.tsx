@@ -1,68 +1,592 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowRight, BarChart3, BrainCircuit, BriefcaseBusiness, CheckCircle2, Database, FileSearch, GitBranch, LockKeyhole, Mail, MessageSquare, ShieldCheck, Waypoints } from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart3,
+  BrainCircuit,
+  BriefcaseBusiness,
+  CalendarClock,
+  CheckCircle2,
+  Database,
+  FileSearch,
+  GitBranch,
+  LockKeyhole,
+  Mail,
+  MessageSquare,
+  ShieldCheck,
+  Waypoints,
+} from 'lucide-react';
 import { WaitlistForm } from '@/components/waitlist-form';
 
 export type Locale = 'en' | 'zh-CN' | 'zh-TW';
 
-const localeLabels: Record<Locale, string> = { en: 'English', 'zh-CN': '简体中文', 'zh-TW': '繁體中文' };
-const localeMetadata: Record<Locale, { title: string; description: string }> = {
-  en: { title: 'Redwood - U.S. Equity Research Platform', description: 'A local-first, evidence-led, and auditable U.S. equity research platform.' },
-  'zh-CN': { title: 'Redwood - 美股投研平台', description: '本地优先、证据驱动且可审计的美股投研平台。' },
-  'zh-TW': { title: 'Redwood - 美股投研平台', description: '本地優先、證據驅動且可稽核的美股投研平台。' },
+const localeLabels: Record<Locale, string> = {
+  en: 'English',
+  'zh-CN': '简体中文',
+  'zh-TW': '繁體中文',
 };
-const capabilityIcons = [FileSearch, BrainCircuit, BarChart3, Waypoints, GitBranch, ShieldCheck, Mail, BriefcaseBusiness];
+const localeMetadata: Record<Locale, { title: string; description: string }> = {
+  en: {
+    title: 'Redwood - U.S. Equity Research Platform',
+    description:
+      'A local-first, evidence-led, and auditable U.S. equity research platform.',
+  },
+  'zh-CN': {
+    title: 'Redwood - 美股投研平台',
+    description: '本地优先、证据驱动且可审计的美股投研平台。',
+  },
+  'zh-TW': {
+    title: 'Redwood - 美股投研平台',
+    description: '本地優先、證據驅動且可稽核的美股投研平台。',
+  },
+};
+const capabilityIcons = [
+  FileSearch,
+  BrainCircuit,
+  BarChart3,
+  Waypoints,
+  GitBranch,
+  ShieldCheck,
+  Mail,
+  BriefcaseBusiness,
+  CalendarClock,
+];
 
 const content = {
   en: {
     nav: ['Framework', 'Capabilities', 'Cases', 'Principles'],
-    eyebrow: 'Built for evidence-led investing', heroLead: 'Research,', heroAccent: 'rooted', heroTail: 'in evidence',
-    heroCopy: 'Redwood is a local-first U.S. equity research platform. It turns scattered filings, market data, and private knowledge into conclusions you can trace and verify.',
-    explore: 'Explore the research system', view: 'View capabilities', badges: ['Local-first', 'Evidence-auditable', 'No order execution'],
-    illustrative: 'ILLUSTRATIVE', companyReview: 'COMPANY UNDER REVIEW', workflow: 'WORKFLOW', sample: 'SAMPLE', evidenceChain: 'EVIDENCE CHAIN', researchDepth: 'RESEARCH DEPTH', coreModules: 'Core modules', debate: '+ two-sided debate', synthesizing: 'Coordinator synthesizing evidence', review: 'REVIEW',
-    agents: [['Fundamentals','Statements · Quality · ROIC'],['Valuation','DCF · Scenarios · Sensitivity'],['Market Pulse','News · Technicals · Volatility']],
-    evidence: [['10-K / Revenue','matched'],['Earnings call / Guidance','matched'],['Local thesis / Moat','review']],
+    eyebrow: 'Built for evidence-led investing',
+    heroLead: 'Research,',
+    heroAccent: 'rooted',
+    heroTail: 'in evidence',
+    heroCopy:
+      'Redwood is a local-first U.S. equity research platform. It turns scattered filings, market data, and private knowledge into conclusions you can trace and verify.',
+    explore: 'Explore the research system',
+    view: 'View capabilities',
+    badges: ['Local-first', 'Evidence-auditable', 'No order execution'],
+    illustrative: 'ILLUSTRATIVE',
+    companyReview: 'COMPANY UNDER REVIEW',
+    workflow: 'WORKFLOW',
+    sample: 'SAMPLE',
+    evidenceChain: 'EVIDENCE CHAIN',
+    researchDepth: 'RESEARCH DEPTH',
+    coreModules: 'Core modules',
+    debate: '+ two-sided debate',
+    synthesizing: 'Coordinator synthesizing evidence',
+    review: 'REVIEW',
+    agents: [
+      ['Fundamentals', 'Statements · Quality · ROIC'],
+      ['Valuation', 'DCF · Scenarios · Sensitivity'],
+      ['Market Pulse', 'News · Technicals · Volatility'],
+    ],
+    evidence: [
+      ['10-K / Revenue', 'matched'],
+      ['Earnings call / Guidance', 'matched'],
+      ['Local thesis / Moat', 'review'],
+    ],
     highlights: [
-      ['4+','Extensible knowledge domains','Self-managed local collections, expandable to trusted third-party data sources'],
-      ['5+2','Multiple research frameworks','Valuation, Goldman Sachs research synthesis, 5+2 analysis, and more'],
-      ['BY DESIGN','Traceable evidence','Claims retain provenance, context, and visible uncertainty'],
-      ['TRIGGERED','Workflow automation','Scheduled and agent-triggered research runs without autonomous order execution'],
+      [
+        '4+',
+        'Extensible knowledge domains',
+        'Self-managed local collections, expandable to trusted third-party data sources',
+      ],
+      [
+        '5+2',
+        'Multiple research frameworks',
+        'Valuation, Goldman Sachs research synthesis, 5+2 analysis, and more',
+      ],
+      [
+        'BY DESIGN',
+        'Traceable evidence',
+        'Claims retain provenance, context, and visible uncertainty',
+      ],
+      [
+        'TRIGGERED',
+        'Workflow automation',
+        'Scheduled and agent-triggered research runs without autonomous order execution',
+      ],
     ],
-    systemIndex: '01 / RESEARCH SYSTEM', systemTitle: 'Not more information.', systemAccent: 'A better research order.', systemCopy: 'Redwood examines a company through a 5+2 framework: five objective research modules, followed by a two-sided stress test of the case for—and against—investing.',
-    framework: [['01','Industry','Map industry structure, cycle position, and competitive forces'],['02','Business model','Deconstruct revenue engines, moats, and unit economics'],['03','Management','Assess capital allocation, incentives, and execution history'],['04','Financials','Interrogate growth quality, cash flow, and the balance sheet'],['05','Valuation','Build price discipline through DCF and relative valuation']],
-    investmentLogic: 'Investment logic', investmentQuestion: 'What must remain true? What is the market missing?', reasons: 'Reasons not to invest', reasonsQuestion: 'What would invalidate the thesis? Which risks are underpriced?',
-    capabilitiesIndex: '02 / PLATFORM CAPABILITIES', capabilitiesTitle: 'Every conclusion has a provenance.', capabilitiesCopy: 'From the moment information enters Redwood, its source, version, rights, and location are recorded. Agents find connections; humans retain judgment.',
+    systemIndex: '01 / RESEARCH SYSTEM',
+    systemTitle: 'Not more information.',
+    systemAccent: 'A better research order.',
+    systemCopy:
+      'Redwood examines a company through a 5+2 framework: five objective research modules, followed by a two-sided stress test of the case for—and against—investing.',
+    framework: [
+      [
+        '01',
+        'Industry',
+        'Map industry structure, cycle position, and competitive forces',
+      ],
+      [
+        '02',
+        'Business model',
+        'Deconstruct revenue engines, moats, and unit economics',
+      ],
+      [
+        '03',
+        'Management',
+        'Assess capital allocation, incentives, and execution history',
+      ],
+      [
+        '04',
+        'Financials',
+        'Interrogate growth quality, cash flow, and the balance sheet',
+      ],
+      [
+        '05',
+        'Valuation',
+        'Build price discipline through DCF and relative valuation',
+      ],
+    ],
+    investmentLogic: 'Investment logic',
+    investmentQuestion: 'What must remain true? What is the market missing?',
+    reasons: 'Reasons not to invest',
+    reasonsQuestion:
+      'What would invalidate the thesis? Which risks are underpriced?',
+    capabilitiesIndex: '02 / PLATFORM CAPABILITIES',
+    capabilitiesTitle: 'Every conclusion has a provenance.',
+    capabilitiesCopy:
+      'From the moment information enters Redwood, its source, version, rights, and location are recorded. Agents find connections; humans retain judgment.',
     capabilities: [
-      ['Local knowledge engine','Turn PDFs, Markdown, DOCX, and private notes into precisely located evidence while preserving source, time, and usage rights.'],
-      ['Specialist research agents','Fundamentals, valuation, news, technicals, and volatility work in their own lanes while a coordinator enforces one evidence standard.'],
-      ['Deterministic finance','Financial ratios, option Greeks, implied volatility, and risk metrics run through reproducible calculations with inspectable outputs.'],
-      ['Financial research ontology','Unify companies, securities, metrics, and relationships while keeping matched, ambiguous, and unresolved identities explicit.'],
-      ['Auditable evidence chain','Every material claim can resolve to an original document, precise locator, and evidence class—ready to challenge, verify, and update.'],
-      ['Read-only safety boundary','Redwood supports research and risk understanding, never order execution. Sensitive credentials stay outside model context and outputs.'],
-      ['Email & messaging delivery','Deliver scheduled research and agent-triggered updates through email or approved third-party instant-messaging channels.'],
-      ['Portfolio intelligence','Produce full-view asset statistics, evaluation reports, and IBKR holdings-risk reviews with privacy-safe presentation controls.'],
+      [
+        'Local knowledge engine',
+        'Turn PDFs, Markdown, DOCX, and private notes into precisely located evidence while preserving source, time, and usage rights.',
+      ],
+      [
+        'Specialist research agents',
+        'Fundamentals, valuation, news, technicals, and volatility work in their own lanes while a coordinator enforces one evidence standard.',
+      ],
+      [
+        'Deterministic finance',
+        'Financial ratios, option Greeks, implied volatility, and risk metrics run through reproducible calculations with inspectable outputs.',
+      ],
+      [
+        'Financial research ontology',
+        'Unify companies, securities, metrics, and relationships while keeping matched, ambiguous, and unresolved identities explicit.',
+      ],
+      [
+        'Auditable evidence chain',
+        'Every material claim can resolve to an original document, precise locator, and evidence class—ready to challenge, verify, and update.',
+      ],
+      [
+        'Read-only safety boundary',
+        'Redwood supports research and risk understanding, never order execution. Sensitive credentials stay outside model context and outputs.',
+      ],
+      [
+        'Email & messaging delivery',
+        'Deliver scheduled research and agent-triggered updates through email or approved third-party instant-messaging channels.',
+      ],
+      [
+        'Portfolio intelligence',
+        'Produce full-view asset statistics, evaluation reports, and IBKR holdings-risk reviews with privacy-safe presentation controls.',
+      ],
+      [
+        'Company event intelligence',
+        'Monitor material company actions, disclose evidence gaps, and deliver one review-ready daily brief across approved channels.',
+      ],
     ],
-    casesIndex: '03 / PRIVACY-SAFE CASES', casesTitle: 'Useful at portfolio scale.', casesAccent: 'Private by construction.', casesCopy: 'Illustrative report layouts show how Redwood communicates portfolio findings. Sensitive fields are replaced with non-recoverable mosaic placeholders—no live account or position data is embedded in this page.',
-    caseOne: ['CASE 01','FULL-VIEW ASSET REPORT','HOUSEHOLD / CONSOLIDATED','Asset statistics & evaluation','Owner','Total assets','Report date','Brokerage','Banking','Pension','Cash','Risk R1–R5','Consolidates asset classes, liquidity, currency exposure, allocation, and risk bands into one reconciled view.'],
-    caseTwo: ['CASE 02','IBKR HOLDINGS RISK','PORTFOLIO / RISK REVIEW','Holdings risk assessment','Account','Net liquidation','Top position','Concentration & overlap','Options expiry & liquidity','Margin, FX & drawdown risk','Email','Third-party IM','Turns a read-only holdings snapshot into prioritized risk observations and scheduled or agent-triggered delivery.'],
-    mosaiced: 'MOSAICED', principlesIndex: '04 / PRODUCT PRINCIPLES', principlesTitle: 'AI can accelerate research.', principlesAccent: 'It cannot replace accountability.',
-    principles: [['Evidence before opinion','Claims begin with sources, not confidence.'],['Uncertainty stays visible','Unknowns are never packaged as certainty.'],['Local by default','Private knowledge and sensitive data remain local.'],['Human decides','The system supports research; the investor decides.']],
-    beta: 'PRIVATE BETA / 2026', ctaTitle: 'Built for investors', ctaTail: 'who go', ctaAccent: 'deep.', ctaCopy: 'Redwood is evolving in private beta with investors who value evidence, process, and long-term thinking.', footer: 'Research infrastructure for thoughtful investors.',
+    casesIndex: '03 / PRIVACY-SAFE CASES',
+    casesTitle: 'Useful at portfolio scale.',
+    casesAccent: 'Private by construction.',
+    casesCopy:
+      'Illustrative report layouts show how Redwood communicates portfolio findings. Sensitive fields are replaced with non-recoverable mosaic placeholders—no live account or position data is embedded in this page.',
+    caseOne: [
+      'CASE 01',
+      'FULL-VIEW ASSET REPORT',
+      'HOUSEHOLD / CONSOLIDATED',
+      'Asset statistics & evaluation',
+      'Owner',
+      'Total assets',
+      'Report date',
+      'Brokerage',
+      'Banking',
+      'Pension',
+      'Cash',
+      'Risk R1–R5',
+      'Consolidates asset classes, liquidity, currency exposure, allocation, and risk bands into one reconciled view.',
+    ],
+    caseTwo: [
+      'CASE 02',
+      'IBKR HOLDINGS RISK',
+      'PORTFOLIO / RISK REVIEW',
+      'Holdings risk assessment',
+      'Account',
+      'Net liquidation',
+      'Top position',
+      'Concentration & overlap',
+      'Options expiry & liquidity',
+      'Margin, FX & drawdown risk',
+      'Email',
+      'Third-party IM',
+      'Turns a read-only holdings snapshot into prioritized risk observations and scheduled or agent-triggered delivery.',
+    ],
+    caseThree: [
+      'CASE 03',
+      'COMPANY EVENT INTELLIGENCE',
+      'WATCHLIST / DAILY BRIEF',
+      'Material actions, in one review queue',
+      'Coverage',
+      'Event window',
+      'Evidence status',
+      'Corporate action',
+      'Potential impact',
+      'Gap disclosed',
+      'Email',
+      'Notion',
+      'Turns authorized public evidence into a concise daily brief, with independent delivery status and safe retry behavior.',
+    ],
+    mosaiced: 'MOSAICED',
+    principlesIndex: '04 / PRODUCT PRINCIPLES',
+    principlesTitle: 'AI can accelerate research.',
+    principlesAccent: 'It cannot replace accountability.',
+    principles: [
+      ['Evidence before opinion', 'Claims begin with sources, not confidence.'],
+      [
+        'Uncertainty stays visible',
+        'Unknowns are never packaged as certainty.',
+      ],
+      [
+        'Local by default',
+        'Private knowledge and sensitive data remain local.',
+      ],
+      ['Human decides', 'The system supports research; the investor decides.'],
+    ],
+    beta: 'PRIVATE BETA / 2026',
+    ctaTitle: 'Built for investors',
+    ctaTail: 'who go',
+    ctaAccent: 'deep.',
+    ctaCopy:
+      'Redwood is evolving in private beta with investors who value evidence, process, and long-term thinking.',
+    footer: 'Research infrastructure for thoughtful investors.',
   },
   'zh-CN': {
-    nav: ['研究框架', '平台能力', '案例', '产品原则'], eyebrow: '为证据驱动的投资研究而构建', heroLead: '研究，', heroAccent: '扎根', heroTail: '于证据', heroCopy: 'Redwood 是一个本地优先的美股投研平台，将分散的公司文件、市场数据与私有知识转化为可追溯、可验证的研究结论。', explore: '探索研究系统', view: '查看平台能力', badges: ['本地优先', '证据可审计', '不执行交易'], illustrative: '示意界面', companyReview: '研究标的', workflow: '工作流', sample: '示例', evidenceChain: '证据链', researchDepth: '研究深度', coreModules: '核心模块', debate: '+ 双向论证', synthesizing: '协调器正在综合证据', review: '复核', agents: [['基本面','报表 · 质量 · ROIC'],['估值','DCF · 情景 · 敏感性'],['市场脉搏','新闻 · 技术面 · 波动率']], evidence: [['10-K / 营收','已匹配'],['业绩会 / 指引','已匹配'],['本地论点 / 护城河','待复核']],
-    highlights: [['4+','可扩展知识域','自主管理本地知识集合，并可扩展可信第三方数据源'],['5+2','多元研究框架','估值分析、高盛研报综合、5+2 分析法等'],['设计保证','证据可追溯','保留来源、上下文与可见的不确定性'],['按需触发','工作流自动化','支持定时与 Agent 触发，不进行自主下单']],
-    systemIndex: '01 / 研究系统', systemTitle: '不是堆积更多信息，', systemAccent: '而是建立更好的研究顺序。', systemCopy: 'Redwood 采用 5+2 框架研究公司：先完成五个客观模块，再从投资逻辑与反方证据两侧对结论进行压力测试。', framework: [['01','行业','分析行业结构、周期位置与竞争力量'],['02','商业模式','拆解收入引擎、护城河与单位经济'],['03','管理层','评估资本配置、激励机制与执行记录'],['04','财务','审视增长质量、现金流与资产负债表'],['05','估值','通过 DCF 与相对估值建立价格纪律']], investmentLogic: '投资逻辑', investmentQuestion: '哪些条件必须持续成立？市场忽略了什么？', reasons: '不投资的理由', reasonsQuestion: '什么会推翻论点？哪些风险尚未被充分定价？',
-    capabilitiesIndex: '02 / 平台能力', capabilitiesTitle: '每个结论都有出处。', capabilitiesCopy: '信息进入 Redwood 后，其来源、版本、权利与位置都会被记录。Agent 负责发现连接，人保留最终判断。', capabilities: [['本地知识引擎','将 PDF、Markdown、DOCX 与私有笔记转化为精确定位的证据，并保留来源、时间与使用权。'],['专业研究 Agent','基本面、估值、新闻、技术面与波动率各司其职，由协调器执行统一证据标准。'],['确定性金融计算','财务比率、期权 Greeks、隐含波动率与风险指标使用可复现、可检查的计算。'],['金融研究本体','统一公司、证券、指标与关系，同时明确已匹配、歧义与未解析身份。'],['可审计证据链','重要论断可回溯到原始文件、精确位置与证据类别，便于质疑、验证和更新。'],['只读安全边界','Redwood 支持研究与风险理解，不执行交易；敏感凭据不进入模型上下文或输出。'],['邮件与即时通讯交付','通过邮件或获准的第三方 IM 渠道交付定时研究与 Agent 触发的更新。'],['资产组合洞察','生成全口径资产统计、评估报告与 IBKR 持仓风险分析，并采用隐私安全的展示控制。']],
-    casesIndex: '03 / 隐私安全案例', casesTitle: '服务于全资产视角，', casesAccent: '隐私从设计开始。', casesCopy: '以下为 Redwood 报告的示意布局。敏感字段使用不可逆的马赛克占位符，页面中不包含任何真实账户或持仓数据。', caseOne: ['案例 01','全口径资产报告','家庭 / 合并口径','资产统计与评估','所有人','总资产','报告日期','券商','银行','养老金','现金','风险 R1–R5','将资产类别、流动性、货币敞口、配置与风险等级整合为可核对的统一视图。'], caseTwo: ['案例 02','IBKR 持仓风险','投资组合 / 风险复核','持仓风险评估','账户','净清算价值','最大持仓','集中度与重叠','期权到期与流动性','保证金、外汇与回撤风险','邮件','第三方 IM','将只读持仓快照转化为按优先级排列的风险观察，并支持定时或 Agent 触发交付。'], mosaiced: '已马赛克', principlesIndex: '04 / 产品原则', principlesTitle: 'AI 可以加速研究，', principlesAccent: '但不能替代责任。', principles: [['证据先于观点','结论从来源开始，而不是从信心开始。'],['不确定性保持可见','未知不会被包装成确定。'],['默认本地处理','私有知识与敏感数据保留在本地。'],['由人决策','系统辅助研究，投资者做出决定。']], beta: '私有测试 / 2026', ctaTitle: '为深度研究的', ctaTail: '投资者而生', ctaAccent: '。', ctaCopy: 'Redwood 正与重视证据、流程和长期思考的投资者共同推进私有测试。', footer: '为审慎投资者打造的研究基础设施。',
+    nav: ['研究框架', '平台能力', '案例', '产品原则'],
+    eyebrow: '为证据驱动的投资研究而构建',
+    heroLead: '研究，',
+    heroAccent: '扎根',
+    heroTail: '于证据',
+    heroCopy:
+      'Redwood 是一个本地优先的美股投研平台，将分散的公司文件、市场数据与私有知识转化为可追溯、可验证的研究结论。',
+    explore: '探索研究系统',
+    view: '查看平台能力',
+    badges: ['本地优先', '证据可审计', '不执行交易'],
+    illustrative: '示意界面',
+    companyReview: '研究标的',
+    workflow: '工作流',
+    sample: '示例',
+    evidenceChain: '证据链',
+    researchDepth: '研究深度',
+    coreModules: '核心模块',
+    debate: '+ 双向论证',
+    synthesizing: '协调器正在综合证据',
+    review: '复核',
+    agents: [
+      ['基本面', '报表 · 质量 · ROIC'],
+      ['估值', 'DCF · 情景 · 敏感性'],
+      ['市场脉搏', '新闻 · 技术面 · 波动率'],
+    ],
+    evidence: [
+      ['10-K / 营收', '已匹配'],
+      ['业绩会 / 指引', '已匹配'],
+      ['本地论点 / 护城河', '待复核'],
+    ],
+    highlights: [
+      ['4+', '可扩展知识域', '自主管理本地知识集合，并可扩展可信第三方数据源'],
+      ['5+2', '多元研究框架', '估值分析、高盛研报综合、5+2 分析法等'],
+      ['设计保证', '证据可追溯', '保留来源、上下文与可见的不确定性'],
+      ['按需触发', '工作流自动化', '支持定时与 Agent 触发，不进行自主下单'],
+    ],
+    systemIndex: '01 / 研究系统',
+    systemTitle: '不是堆积更多信息，',
+    systemAccent: '而是建立更好的研究顺序。',
+    systemCopy:
+      'Redwood 采用 5+2 框架研究公司：先完成五个客观模块，再从投资逻辑与反方证据两侧对结论进行压力测试。',
+    framework: [
+      ['01', '行业', '分析行业结构、周期位置与竞争力量'],
+      ['02', '商业模式', '拆解收入引擎、护城河与单位经济'],
+      ['03', '管理层', '评估资本配置、激励机制与执行记录'],
+      ['04', '财务', '审视增长质量、现金流与资产负债表'],
+      ['05', '估值', '通过 DCF 与相对估值建立价格纪律'],
+    ],
+    investmentLogic: '投资逻辑',
+    investmentQuestion: '哪些条件必须持续成立？市场忽略了什么？',
+    reasons: '不投资的理由',
+    reasonsQuestion: '什么会推翻论点？哪些风险尚未被充分定价？',
+    capabilitiesIndex: '02 / 平台能力',
+    capabilitiesTitle: '每个结论都有出处。',
+    capabilitiesCopy:
+      '信息进入 Redwood 后，其来源、版本、权利与位置都会被记录。Agent 负责发现连接，人保留最终判断。',
+    capabilities: [
+      [
+        '本地知识引擎',
+        '将 PDF、Markdown、DOCX 与私有笔记转化为精确定位的证据，并保留来源、时间与使用权。',
+      ],
+      [
+        '专业研究 Agent',
+        '基本面、估值、新闻、技术面与波动率各司其职，由协调器执行统一证据标准。',
+      ],
+      [
+        '确定性金融计算',
+        '财务比率、期权 Greeks、隐含波动率与风险指标使用可复现、可检查的计算。',
+      ],
+      [
+        '金融研究本体',
+        '统一公司、证券、指标与关系，同时明确已匹配、歧义与未解析身份。',
+      ],
+      [
+        '可审计证据链',
+        '重要论断可回溯到原始文件、精确位置与证据类别，便于质疑、验证和更新。',
+      ],
+      [
+        '只读安全边界',
+        'Redwood 支持研究与风险理解，不执行交易；敏感凭据不进入模型上下文或输出。',
+      ],
+      [
+        '邮件与即时通讯交付',
+        '通过邮件或获准的第三方 IM 渠道交付定时研究与 Agent 触发的更新。',
+      ],
+      [
+        '资产组合洞察',
+        '生成全口径资产统计、评估报告与 IBKR 持仓风险分析，并采用隐私安全的展示控制。',
+      ],
+      [
+        '公司事件情报',
+        '持续跟踪重大公司行动，主动披露证据缺口，并通过获准渠道交付可复核的每日简报。',
+      ],
+    ],
+    casesIndex: '03 / 隐私安全案例',
+    casesTitle: '服务于全资产视角，',
+    casesAccent: '隐私从设计开始。',
+    casesCopy:
+      '以下为 Redwood 报告的示意布局。敏感字段使用不可逆的马赛克占位符，页面中不包含任何真实账户或持仓数据。',
+    caseOne: [
+      '案例 01',
+      '全口径资产报告',
+      '家庭 / 合并口径',
+      '资产统计与评估',
+      '所有人',
+      '总资产',
+      '报告日期',
+      '券商',
+      '银行',
+      '养老金',
+      '现金',
+      '风险 R1–R5',
+      '将资产类别、流动性、货币敞口、配置与风险等级整合为可核对的统一视图。',
+    ],
+    caseTwo: [
+      '案例 02',
+      'IBKR 持仓风险',
+      '投资组合 / 风险复核',
+      '持仓风险评估',
+      '账户',
+      '净清算价值',
+      '最大持仓',
+      '集中度与重叠',
+      '期权到期与流动性',
+      '保证金、外汇与回撤风险',
+      '邮件',
+      '第三方 IM',
+      '将只读持仓快照转化为按优先级排列的风险观察，并支持定时或 Agent 触发交付。',
+    ],
+    caseThree: [
+      '案例 03',
+      '公司事件情报',
+      '观察清单 / 每日简报',
+      '重大行动，汇入一个复核队列',
+      '覆盖范围',
+      '事件窗口',
+      '证据状态',
+      '公司行动',
+      '潜在影响',
+      '缺口披露',
+      '邮件',
+      'Notion',
+      '将获准的公开证据转化为简洁的每日简报，并独立记录各交付渠道状态，支持安全重试。',
+    ],
+    mosaiced: '已马赛克',
+    principlesIndex: '04 / 产品原则',
+    principlesTitle: 'AI 可以加速研究，',
+    principlesAccent: '但不能替代责任。',
+    principles: [
+      ['证据先于观点', '结论从来源开始，而不是从信心开始。'],
+      ['不确定性保持可见', '未知不会被包装成确定。'],
+      ['默认本地处理', '私有知识与敏感数据保留在本地。'],
+      ['由人决策', '系统辅助研究，投资者做出决定。'],
+    ],
+    beta: '私有测试 / 2026',
+    ctaTitle: '为深度研究的',
+    ctaTail: '投资者而生',
+    ctaAccent: '。',
+    ctaCopy: 'Redwood 正与重视证据、流程和长期思考的投资者共同推进私有测试。',
+    footer: '为审慎投资者打造的研究基础设施。',
   },
   'zh-TW': {
-    nav: ['研究框架', '平台能力', '案例', '產品原則'], eyebrow: '為證據驅動的投資研究而建', heroLead: '研究，', heroAccent: '扎根', heroTail: '於證據', heroCopy: 'Redwood 是一個本地優先的美股投研平台，將分散的公司文件、市場資料與私有知識轉化為可追溯、可驗證的研究結論。', explore: '探索研究系統', view: '查看平台能力', badges: ['本地優先', '證據可稽核', '不執行交易'], illustrative: '示意介面', companyReview: '研究標的', workflow: '工作流程', sample: '範例', evidenceChain: '證據鏈', researchDepth: '研究深度', coreModules: '核心模組', debate: '+ 雙向論證', synthesizing: '協調器正在綜合證據', review: '覆核', agents: [['基本面','報表 · 品質 · ROIC'],['估值','DCF · 情境 · 敏感度'],['市場脈搏','新聞 · 技術面 · 波動率']], evidence: [['10-K / 營收','已配對'],['業績會 / 指引','已配對'],['本地論點 / 護城河','待覆核']],
-    highlights: [['4+','可擴展知識域','自主管理本地知識集合，並可擴展可信第三方資料來源'],['5+2','多元研究框架','估值分析、高盛研報綜合、5+2 分析法等'],['設計保證','證據可追溯','保留來源、脈絡與可見的不確定性'],['按需觸發','工作流程自動化','支援定時與 Agent 觸發，不進行自主下單']],
-    systemIndex: '01 / 研究系統', systemTitle: '不是堆積更多資訊，', systemAccent: '而是建立更好的研究順序。', systemCopy: 'Redwood 採用 5+2 框架研究公司：先完成五個客觀模組，再從投資邏輯與反方證據兩側對結論進行壓力測試。', framework: [['01','產業','分析產業結構、週期位置與競爭力量'],['02','商業模式','拆解收入引擎、護城河與單位經濟'],['03','管理層','評估資本配置、激勵機制與執行紀錄'],['04','財務','審視成長品質、現金流與資產負債表'],['05','估值','透過 DCF 與相對估值建立價格紀律']], investmentLogic: '投資邏輯', investmentQuestion: '哪些條件必須持續成立？市場忽略了什麼？', reasons: '不投資的理由', reasonsQuestion: '什麼會推翻論點？哪些風險尚未被充分定價？',
-    capabilitiesIndex: '02 / 平台能力', capabilitiesTitle: '每個結論都有出處。', capabilitiesCopy: '資訊進入 Redwood 後，其來源、版本、權利與位置都會被記錄。Agent 負責發現連結，人保留最終判斷。', capabilities: [['本地知識引擎','將 PDF、Markdown、DOCX 與私有筆記轉化為精確定位的證據，並保留來源、時間與使用權。'],['專業研究 Agent','基本面、估值、新聞、技術面與波動率各司其職，由協調器執行統一證據標準。'],['確定性金融計算','財務比率、期權 Greeks、隱含波動率與風險指標使用可重現、可檢查的計算。'],['金融研究本體','統一公司、證券、指標與關係，同時明確已配對、歧義與未解析身分。'],['可稽核證據鏈','重要論斷可回溯到原始文件、精確位置與證據類別，便於質疑、驗證和更新。'],['唯讀安全邊界','Redwood 支援研究與風險理解，不執行交易；敏感憑據不進入模型脈絡或輸出。'],['郵件與即時通訊交付','透過郵件或獲准的第三方 IM 渠道交付定時研究與 Agent 觸發的更新。'],['資產組合洞察','產生全口徑資產統計、評估報告與 IBKR 持倉風險分析，並採用隱私安全的展示控制。']],
-    casesIndex: '03 / 隱私安全案例', casesTitle: '服務於全資產視角，', casesAccent: '隱私從設計開始。', casesCopy: '以下為 Redwood 報告的示意版面。敏感欄位使用不可逆的馬賽克佔位符，頁面中不包含任何真實帳戶或持倉資料。', caseOne: ['案例 01','全口徑資產報告','家庭 / 合併口徑','資產統計與評估','所有人','總資產','報告日期','券商','銀行','退休金','現金','風險 R1–R5','將資產類別、流動性、貨幣曝險、配置與風險等級整合為可核對的統一視圖。'], caseTwo: ['案例 02','IBKR 持倉風險','投資組合 / 風險覆核','持倉風險評估','帳戶','淨清算價值','最大持倉','集中度與重疊','期權到期與流動性','保證金、外匯與回撤風險','郵件','第三方 IM','將唯讀持倉快照轉化為按優先級排列的風險觀察，並支援定時或 Agent 觸發交付。'], mosaiced: '已馬賽克', principlesIndex: '04 / 產品原則', principlesTitle: 'AI 可以加速研究，', principlesAccent: '但不能取代責任。', principles: [['證據先於觀點','結論從來源開始，而不是從信心開始。'],['不確定性保持可見','未知不會被包裝成確定。'],['預設本地處理','私有知識與敏感資料保留在本地。'],['由人決策','系統輔助研究，投資者做出決定。']], beta: '私有測試 / 2026', ctaTitle: '為深度研究的', ctaTail: '投資者而生', ctaAccent: '。', ctaCopy: 'Redwood 正與重視證據、流程和長期思考的投資者共同推進私有測試。', footer: '為審慎投資者打造的研究基礎設施。',
+    nav: ['研究框架', '平台能力', '案例', '產品原則'],
+    eyebrow: '為證據驅動的投資研究而建',
+    heroLead: '研究，',
+    heroAccent: '扎根',
+    heroTail: '於證據',
+    heroCopy:
+      'Redwood 是一個本地優先的美股投研平台，將分散的公司文件、市場資料與私有知識轉化為可追溯、可驗證的研究結論。',
+    explore: '探索研究系統',
+    view: '查看平台能力',
+    badges: ['本地優先', '證據可稽核', '不執行交易'],
+    illustrative: '示意介面',
+    companyReview: '研究標的',
+    workflow: '工作流程',
+    sample: '範例',
+    evidenceChain: '證據鏈',
+    researchDepth: '研究深度',
+    coreModules: '核心模組',
+    debate: '+ 雙向論證',
+    synthesizing: '協調器正在綜合證據',
+    review: '覆核',
+    agents: [
+      ['基本面', '報表 · 品質 · ROIC'],
+      ['估值', 'DCF · 情境 · 敏感度'],
+      ['市場脈搏', '新聞 · 技術面 · 波動率'],
+    ],
+    evidence: [
+      ['10-K / 營收', '已配對'],
+      ['業績會 / 指引', '已配對'],
+      ['本地論點 / 護城河', '待覆核'],
+    ],
+    highlights: [
+      [
+        '4+',
+        '可擴展知識域',
+        '自主管理本地知識集合，並可擴展可信第三方資料來源',
+      ],
+      ['5+2', '多元研究框架', '估值分析、高盛研報綜合、5+2 分析法等'],
+      ['設計保證', '證據可追溯', '保留來源、脈絡與可見的不確定性'],
+      ['按需觸發', '工作流程自動化', '支援定時與 Agent 觸發，不進行自主下單'],
+    ],
+    systemIndex: '01 / 研究系統',
+    systemTitle: '不是堆積更多資訊，',
+    systemAccent: '而是建立更好的研究順序。',
+    systemCopy:
+      'Redwood 採用 5+2 框架研究公司：先完成五個客觀模組，再從投資邏輯與反方證據兩側對結論進行壓力測試。',
+    framework: [
+      ['01', '產業', '分析產業結構、週期位置與競爭力量'],
+      ['02', '商業模式', '拆解收入引擎、護城河與單位經濟'],
+      ['03', '管理層', '評估資本配置、激勵機制與執行紀錄'],
+      ['04', '財務', '審視成長品質、現金流與資產負債表'],
+      ['05', '估值', '透過 DCF 與相對估值建立價格紀律'],
+    ],
+    investmentLogic: '投資邏輯',
+    investmentQuestion: '哪些條件必須持續成立？市場忽略了什麼？',
+    reasons: '不投資的理由',
+    reasonsQuestion: '什麼會推翻論點？哪些風險尚未被充分定價？',
+    capabilitiesIndex: '02 / 平台能力',
+    capabilitiesTitle: '每個結論都有出處。',
+    capabilitiesCopy:
+      '資訊進入 Redwood 後，其來源、版本、權利與位置都會被記錄。Agent 負責發現連結，人保留最終判斷。',
+    capabilities: [
+      [
+        '本地知識引擎',
+        '將 PDF、Markdown、DOCX 與私有筆記轉化為精確定位的證據，並保留來源、時間與使用權。',
+      ],
+      [
+        '專業研究 Agent',
+        '基本面、估值、新聞、技術面與波動率各司其職，由協調器執行統一證據標準。',
+      ],
+      [
+        '確定性金融計算',
+        '財務比率、期權 Greeks、隱含波動率與風險指標使用可重現、可檢查的計算。',
+      ],
+      [
+        '金融研究本體',
+        '統一公司、證券、指標與關係，同時明確已配對、歧義與未解析身分。',
+      ],
+      [
+        '可稽核證據鏈',
+        '重要論斷可回溯到原始文件、精確位置與證據類別，便於質疑、驗證和更新。',
+      ],
+      [
+        '唯讀安全邊界',
+        'Redwood 支援研究與風險理解，不執行交易；敏感憑據不進入模型脈絡或輸出。',
+      ],
+      [
+        '郵件與即時通訊交付',
+        '透過郵件或獲准的第三方 IM 渠道交付定時研究與 Agent 觸發的更新。',
+      ],
+      [
+        '資產組合洞察',
+        '產生全口徑資產統計、評估報告與 IBKR 持倉風險分析，並採用隱私安全的展示控制。',
+      ],
+      [
+        '公司事件情報',
+        '持續追蹤重大公司行動，主動揭示證據缺口，並透過獲准渠道交付可覆核的每日簡報。',
+      ],
+    ],
+    casesIndex: '03 / 隱私安全案例',
+    casesTitle: '服務於全資產視角，',
+    casesAccent: '隱私從設計開始。',
+    casesCopy:
+      '以下為 Redwood 報告的示意版面。敏感欄位使用不可逆的馬賽克佔位符，頁面中不包含任何真實帳戶或持倉資料。',
+    caseOne: [
+      '案例 01',
+      '全口徑資產報告',
+      '家庭 / 合併口徑',
+      '資產統計與評估',
+      '所有人',
+      '總資產',
+      '報告日期',
+      '券商',
+      '銀行',
+      '退休金',
+      '現金',
+      '風險 R1–R5',
+      '將資產類別、流動性、貨幣曝險、配置與風險等級整合為可核對的統一視圖。',
+    ],
+    caseTwo: [
+      '案例 02',
+      'IBKR 持倉風險',
+      '投資組合 / 風險覆核',
+      '持倉風險評估',
+      '帳戶',
+      '淨清算價值',
+      '最大持倉',
+      '集中度與重疊',
+      '期權到期與流動性',
+      '保證金、外匯與回撤風險',
+      '郵件',
+      '第三方 IM',
+      '將唯讀持倉快照轉化為按優先級排列的風險觀察，並支援定時或 Agent 觸發交付。',
+    ],
+    caseThree: [
+      '案例 03',
+      '公司事件情報',
+      '觀察清單 / 每日簡報',
+      '重大行動，匯入一個覆核佇列',
+      '涵蓋範圍',
+      '事件窗口',
+      '證據狀態',
+      '公司行動',
+      '潛在影響',
+      '缺口揭示',
+      '郵件',
+      'Notion',
+      '將獲准的公開證據轉化為精簡的每日簡報，並獨立記錄各交付渠道狀態，支援安全重試。',
+    ],
+    mosaiced: '已馬賽克',
+    principlesIndex: '04 / 產品原則',
+    principlesTitle: 'AI 可以加速研究，',
+    principlesAccent: '但不能取代責任。',
+    principles: [
+      ['證據先於觀點', '結論從來源開始，而不是從信心開始。'],
+      ['不確定性保持可見', '未知不會被包裝成確定。'],
+      ['預設本地處理', '私有知識與敏感資料保留在本地。'],
+      ['由人決策', '系統輔助研究，投資者做出決定。'],
+    ],
+    beta: '私有測試 / 2026',
+    ctaTitle: '為深度研究的',
+    ctaTail: '投資者而生',
+    ctaAccent: '。',
+    ctaCopy: 'Redwood 正與重視證據、流程和長期思考的投資者共同推進私有測試。',
+    footer: '為審慎投資者打造的研究基礎設施。',
   },
 } as const;
 
@@ -70,7 +594,9 @@ export default function Home() {
   const [locale, setLocale] = useState<Locale>('en');
   const copy = content[locale];
   useEffect(() => {
-    const saved = window.localStorage.getItem('redwood-locale') as Locale | null;
+    const saved = window.localStorage.getItem(
+      'redwood-locale',
+    ) as Locale | null;
     if (!saved || !(saved in content)) return;
     const frame = window.requestAnimationFrame(() => setLocale(saved));
     return () => window.cancelAnimationFrame(frame);
@@ -79,37 +605,491 @@ export default function Home() {
     document.documentElement.lang = locale;
     window.localStorage.setItem('redwood-locale', locale);
     document.title = localeMetadata[locale].title;
-    document.querySelector('meta[name="description"]')?.setAttribute('content', localeMetadata[locale].description);
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute('content', localeMetadata[locale].description);
   }, [locale]);
 
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-6 lg:px-10">
-        <a href="#top" className="flex items-center gap-3" aria-label="Redwood home"><span className="brand-mark"><span /></span><span className="font-mono text-[15px] font-semibold tracking-[0.08em]">REDWOOD</span></a>
-        <div className="hidden items-center gap-7 text-sm text-muted-foreground lg:flex">{copy.nav.map((label,i)=><a className="nav-link" href={['#framework','#capabilities','#cases','#principles'][i]} key={label}>{label}</a>)}</div>
+        <a
+          href="#top"
+          className="flex items-center gap-3"
+          aria-label="Redwood home"
+        >
+          <span className="brand-mark">
+            <span />
+          </span>
+          <span className="font-mono text-[15px] font-semibold tracking-[0.08em]">
+            REDWOOD
+          </span>
+        </a>
+        <div className="hidden items-center gap-7 text-sm text-muted-foreground lg:flex">
+          {copy.nav.map((label, i) => (
+            <a
+              className="nav-link"
+              href={['#framework', '#capabilities', '#cases', '#principles'][i]}
+              key={label}
+            >
+              {label}
+            </a>
+          ))}
+        </div>
         <div className="nav-actions">
-          <label className="locale-picker"><span className="sr-only">Language</span><select value={locale} onChange={(event)=>setLocale(event.target.value as Locale)} aria-label="Language">{(Object.keys(localeLabels) as Locale[]).map(value=><option value={value} key={value}>{localeLabels[value]}</option>)}</select></label>
+          <label className="locale-picker">
+            <span className="sr-only">Language</span>
+            <select
+              value={locale}
+              onChange={(event) => setLocale(event.target.value as Locale)}
+              aria-label="Language"
+            >
+              {(Object.keys(localeLabels) as Locale[]).map((value) => (
+                <option value={value} key={value}>
+                  {localeLabels[value]}
+                </option>
+              ))}
+            </select>
+          </label>
           <WaitlistForm source="header" locale={locale} />
         </div>
       </nav>
 
-      <section id="top" className="mx-auto grid max-w-7xl items-center gap-16 px-6 pb-24 pt-16 lg:grid-cols-[0.92fr_1.08fr] lg:px-10 lg:pb-32 lg:pt-24">
-        <div><div className="eyebrow"><span className="live-dot" /> {copy.eyebrow}</div><h1 className="mt-7 font-heading text-[clamp(3.8rem,8vw,7.5rem)] font-medium leading-[0.82] tracking-[-0.075em]">{copy.heroLead}<br/><span className="serif-italic text-primary">{copy.heroAccent}</span> {copy.heroTail}</h1><p className="mt-9 max-w-xl text-lg leading-8 text-muted-foreground">{copy.heroCopy}</p><div className="mt-9 flex flex-wrap gap-3"><a href="#framework" className="button button-primary">{copy.explore} <ArrowRight size={17}/></a><a href="#capabilities" className="button button-ghost">{copy.view}</a></div><div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-border pt-6 text-xs text-muted-foreground"><span className="flex items-center gap-2"><LockKeyhole size={14}/>{copy.badges[0]}</span><span className="flex items-center gap-2"><ShieldCheck size={14}/>{copy.badges[1]}</span><span className="flex items-center gap-2"><CheckCircle2 size={14}/>{copy.badges[2]}</span></div></div>
-        <div className="relative"><div className="hero-orbit" aria-hidden="true"/><div className="research-console"><div className="console-topbar"><div className="flex items-center gap-2"><span className="terminal-dot"/><span className="terminal-dot"/><span className="terminal-dot"/></div><span className="font-mono text-[10px] tracking-[0.18em] text-white/45">REDWOOD / RESEARCH RUN</span><span className="rounded-full border border-white/10 px-2 py-1 font-mono text-[9px] text-[#e7a293]">{copy.illustrative}</span></div><div className="p-5 sm:p-7"><div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5"><div><p className="font-mono text-[10px] tracking-[0.14em] text-white/40">{copy.companyReview}</p><h2 className="mt-2 text-2xl font-medium text-white">NVIDIA <span className="text-white/35">/ NVDA</span></h2></div><div className="text-right"><p className="font-mono text-[10px] text-white/40">{copy.workflow}</p><p className="mt-2 font-mono text-xs text-white/75">{copy.sample}</p></div></div><div className="my-5 grid grid-cols-3 gap-2">{copy.agents.map((agent,i)=><div key={agent[0]} className="agent-card"><div className="mb-5 flex items-center justify-between"><span className={`agent-number ${['bg-[#f7d9d2] text-[#8c2f20]','bg-[#eadbc8] text-[#714b24]','bg-[#dce8df] text-[#28543a]'][i]}`}>0{i+1}</span><span className="pulse-ring"/></div><p className="text-sm font-medium text-white">{agent[0]}</p><p className="mt-1 text-[10px] leading-4 text-white/38">{agent[1]}</p></div>)}</div><div className="grid gap-3 sm:grid-cols-[1.3fr_.7fr]"><div className="console-panel"><div className="mb-5 flex items-center justify-between"><span className="panel-label">{copy.evidenceChain}</span><Database size={14} className="text-white/30"/></div><div className="space-y-3">{copy.evidence.map((item,i)=><div key={item[0]} className="evidence-row"><span>{item[0]}</span><span className={i<2?'text-[#9ecbaa]':'text-[#e7a293]'}>{item[1]}</span></div>)}</div></div><div className="console-panel flex flex-col justify-between"><span className="panel-label">{copy.researchDepth}</span><div><strong className="font-mono text-4xl font-light text-white">5+2</strong><p className="mt-2 text-[10px] leading-4 text-white/38">{copy.coreModules}<br/>{copy.debate}</p></div></div></div></div><div className="console-footer"><span>{copy.synthesizing}</span><span className="loading-line"><i/></span><span>{copy.review}</span></div></div></div>
+      <section
+        id="top"
+        className="mx-auto grid max-w-7xl items-center gap-16 px-6 pb-24 pt-16 lg:grid-cols-[0.92fr_1.08fr] lg:px-10 lg:pb-32 lg:pt-24"
+      >
+        <div>
+          <div className="eyebrow">
+            <span className="live-dot" /> {copy.eyebrow}
+          </div>
+          <h1 className="mt-7 font-heading text-[clamp(3.8rem,8vw,7.5rem)] font-medium leading-[0.82] tracking-[-0.075em]">
+            {copy.heroLead}
+            <br />
+            <span className="serif-italic text-primary">
+              {copy.heroAccent}
+            </span>{' '}
+            {copy.heroTail}
+          </h1>
+          <p className="mt-9 max-w-xl text-lg leading-8 text-muted-foreground">
+            {copy.heroCopy}
+          </p>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <a href="#framework" className="button button-primary">
+              {copy.explore} <ArrowRight size={17} />
+            </a>
+            <a href="#capabilities" className="button button-ghost">
+              {copy.view}
+            </a>
+          </div>
+          <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-border pt-6 text-xs text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <LockKeyhole size={14} />
+              {copy.badges[0]}
+            </span>
+            <span className="flex items-center gap-2">
+              <ShieldCheck size={14} />
+              {copy.badges[1]}
+            </span>
+            <span className="flex items-center gap-2">
+              <CheckCircle2 size={14} />
+              {copy.badges[2]}
+            </span>
+          </div>
+        </div>
+        <div className="relative">
+          <div className="hero-orbit" aria-hidden="true" />
+          <div className="research-console">
+            <div className="console-topbar">
+              <div className="flex items-center gap-2">
+                <span className="terminal-dot" />
+                <span className="terminal-dot" />
+                <span className="terminal-dot" />
+              </div>
+              <span className="font-mono text-[10px] tracking-[0.18em] text-white/45">
+                REDWOOD / RESEARCH RUN
+              </span>
+              <span className="rounded-full border border-white/10 px-2 py-1 font-mono text-[9px] text-[#e7a293]">
+                {copy.illustrative}
+              </span>
+            </div>
+            <div className="p-5 sm:p-7">
+              <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">
+                <div>
+                  <p className="font-mono text-[10px] tracking-[0.14em] text-white/40">
+                    {copy.companyReview}
+                  </p>
+                  <h2 className="mt-2 text-2xl font-medium text-white">
+                  Company 01 <span className="text-white/35">/ US Equity</span>
+                  </h2>
+                </div>
+                <div className="text-right">
+                  <p className="font-mono text-[10px] text-white/40">
+                    {copy.workflow}
+                  </p>
+                  <p className="mt-2 font-mono text-xs text-white/75">
+                    {copy.sample}
+                  </p>
+                </div>
+              </div>
+              <div className="my-5 grid grid-cols-3 gap-2">
+                {copy.agents.map((agent, i) => (
+                  <div key={agent[0]} className="agent-card">
+                    <div className="mb-5 flex items-center justify-between">
+                      <span
+                        className={`agent-number ${['bg-[#f7d9d2] text-[#8c2f20]', 'bg-[#eadbc8] text-[#714b24]', 'bg-[#dce8df] text-[#28543a]'][i]}`}
+                      >
+                        0{i + 1}
+                      </span>
+                      <span className="pulse-ring" />
+                    </div>
+                    <p className="text-sm font-medium text-white">{agent[0]}</p>
+                    <p className="mt-1 text-[10px] leading-4 text-white/38">
+                      {agent[1]}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="grid gap-3 sm:grid-cols-[1.3fr_.7fr]">
+                <div className="console-panel">
+                  <div className="mb-5 flex items-center justify-between">
+                    <span className="panel-label">{copy.evidenceChain}</span>
+                    <Database size={14} className="text-white/30" />
+                  </div>
+                  <div className="space-y-3">
+                    {copy.evidence.map((item, i) => (
+                      <div key={item[0]} className="evidence-row">
+                        <span>{item[0]}</span>
+                        <span
+                          className={
+                            i < 2 ? 'text-[#9ecbaa]' : 'text-[#e7a293]'
+                          }
+                        >
+                          {item[1]}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="console-panel flex flex-col justify-between">
+                  <span className="panel-label">{copy.researchDepth}</span>
+                  <div>
+                    <strong className="font-mono text-4xl font-light text-white">
+                      5+2
+                    </strong>
+                    <p className="mt-2 text-[10px] leading-4 text-white/38">
+                      {copy.coreModules}
+                      <br />
+                      {copy.debate}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="console-footer">
+              <span>{copy.synthesizing}</span>
+              <span className="loading-line">
+                <i />
+              </span>
+              <span>{copy.review}</span>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <section className="border-y border-border bg-[#f1eee8]"><div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-border px-6 md:grid-cols-4 lg:px-10">{copy.highlights.map(item=><div key={item[1]} className="stat"><strong>{item[0]}</strong><span>{item[1]}</span><small>{item[2]}</small></div>)}</div></section>
+      <section className="border-y border-border bg-[#f1eee8]">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-border px-6 md:grid-cols-4 lg:px-10">
+          {copy.highlights.map((item) => (
+            <div key={item[1]} className="stat">
+              <strong>{item[0]}</strong>
+              <span>{item[1]}</span>
+              <small>{item[2]}</small>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      <section id="framework" className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36"><div className="section-grid"><div className="sticky-copy"><span className="section-index">{copy.systemIndex}</span><h2 className="section-title">{copy.systemTitle}<br/><span className="serif-italic text-primary">{copy.systemAccent}</span></h2><p className="section-copy">{copy.systemCopy}</p></div><div className="framework-list">{copy.framework.map(item=><article className="framework-row" key={item[0]}><span>{item[0]}</span><h3>{item[1]}</h3><p>{item[2]}</p><ArrowRight size={16}/></article>)}<div className="debate-card"><div><span className="debate-sign">+</span><strong>{copy.investmentLogic}</strong><p>{copy.investmentQuestion}</p></div><div><span className="debate-sign">−</span><strong>{copy.reasons}</strong><p>{copy.reasonsQuestion}</p></div></div></div></div></section>
+      <section
+        id="framework"
+        className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36"
+      >
+        <div className="section-grid">
+          <div className="sticky-copy">
+            <span className="section-index">{copy.systemIndex}</span>
+            <h2 className="section-title">
+              {copy.systemTitle}
+              <br />
+              <span className="serif-italic text-primary">
+                {copy.systemAccent}
+              </span>
+            </h2>
+            <p className="section-copy">{copy.systemCopy}</p>
+          </div>
+          <div className="framework-list">
+            {copy.framework.map((item) => (
+              <article className="framework-row" key={item[0]}>
+                <span>{item[0]}</span>
+                <h3>{item[1]}</h3>
+                <p>{item[2]}</p>
+                <ArrowRight size={16} />
+              </article>
+            ))}
+            <div className="debate-card">
+              <div>
+                <span className="debate-sign">+</span>
+                <strong>{copy.investmentLogic}</strong>
+                <p>{copy.investmentQuestion}</p>
+              </div>
+              <div>
+                <span className="debate-sign">−</span>
+                <strong>{copy.reasons}</strong>
+                <p>{copy.reasonsQuestion}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <section id="capabilities" className="dark-section"><div className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36"><div className="mb-16 grid gap-8 lg:grid-cols-2"><div><span className="section-index text-white/35">{copy.capabilitiesIndex}</span><h2 className="mt-6 max-w-2xl text-4xl font-medium tracking-[-.045em] text-white sm:text-6xl">{copy.capabilitiesTitle}</h2></div><p className="max-w-lg self-end text-base leading-7 text-white/50">{copy.capabilitiesCopy}</p></div><div className="capability-grid">{copy.capabilities.map((item,i)=>{const Icon=capabilityIcons[i];return <article className="capability-card" key={item[0]}><div className="flex items-center justify-between"><Icon size={20}/><span>0{i+1}</span></div><h3>{item[0]}</h3><p>{item[1]}</p></article>})}</div></div></section>
+      <section id="capabilities" className="dark-section">
+        <div className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36">
+          <div className="mb-16 grid gap-8 lg:grid-cols-2">
+            <div>
+              <span className="section-index text-white/35">
+                {copy.capabilitiesIndex}
+              </span>
+              <h2 className="mt-6 max-w-2xl text-4xl font-medium tracking-[-.045em] text-white sm:text-6xl">
+                {copy.capabilitiesTitle}
+              </h2>
+            </div>
+            <p className="max-w-lg self-end text-base leading-7 text-white/50">
+              {copy.capabilitiesCopy}
+            </p>
+          </div>
+          <div className="capability-grid">
+            {copy.capabilities.map((item, i) => {
+              const Icon = capabilityIcons[i];
+              return (
+                <article className="capability-card" key={item[0]}>
+                  <div className="flex items-center justify-between">
+                    <Icon size={20} />
+                    <span>0{i + 1}</span>
+                  </div>
+                  <h3>{item[0]}</h3>
+                  <p>{item[1]}</p>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
-      <section id="cases" className="case-section border-b border-border"><div className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36"><div className="case-heading"><div><span className="section-index">{copy.casesIndex}</span><h2 className="section-title">{copy.casesTitle}<br/><span className="serif-italic text-primary">{copy.casesAccent}</span></h2></div><p className="section-copy">{copy.casesCopy}</p></div><div className="case-grid"><article className="case-card"><div className="case-card-top"><span>{copy.caseOne[0]}</span><span>{copy.caseOne[1]}</span></div><div className="report-preview"><div className="report-title"><div><small>{copy.caseOne[2]}</small><h3>{copy.caseOne[3]}</h3></div><span className="privacy-chip"><ShieldCheck size={13}/>{copy.mosaiced}</span></div><div className="masked-grid">{copy.caseOne.slice(4,7).map((label,i)=><div key={label}><small>{label}</small><i className={`mosaic ${i!==1?'mosaic-short':''}`}/></div>)}</div><div className="allocation-bars" aria-label="Illustrative allocation chart"><i style={{width:'82%'}}/><i style={{width:'64%'}}/><i style={{width:'47%'}}/><i style={{width:'29%'}}/></div><div className="report-tags">{copy.caseOne.slice(7,12).map(label=><span key={label}>{label}</span>)}</div></div><p>{copy.caseOne[12]}</p></article><article className="case-card"><div className="case-card-top"><span>{copy.caseTwo[0]}</span><span>{copy.caseTwo[1]}</span></div><div className="report-preview report-preview-dark"><div className="report-title"><div><small>{copy.caseTwo[2]}</small><h3>{copy.caseTwo[3]}</h3></div><span className="privacy-chip"><ShieldCheck size={13}/>{copy.mosaiced}</span></div><div className="masked-grid">{copy.caseTwo.slice(4,7).map((label,i)=><div key={label}><small>{label}</small><i className={`mosaic ${i!==1?'mosaic-short':''}`}/></div>)}</div><div className="risk-list">{copy.caseTwo.slice(7,10).map(label=><span key={label}><i/>{label}</span>)}</div><div className="integration-row"><Mail size={14}/><span>{copy.caseTwo[10]}</span><MessageSquare size={14}/><span>{copy.caseTwo[11]}</span></div></div><p>{copy.caseTwo[12]}</p></article></div></div></section>
+      <section id="cases" className="case-section border-b border-border">
+        <div className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36">
+          <div className="case-heading">
+            <div>
+              <span className="section-index">{copy.casesIndex}</span>
+              <h2 className="section-title">
+                {copy.casesTitle}
+                <br />
+                <span className="serif-italic text-primary">
+                  {copy.casesAccent}
+                </span>
+              </h2>
+            </div>
+            <p className="section-copy">{copy.casesCopy}</p>
+          </div>
+          <div className="case-grid">
+            <article className="case-card">
+              <div className="case-card-top">
+                <span>{copy.caseOne[0]}</span>
+                <span>{copy.caseOne[1]}</span>
+              </div>
+              <div className="report-preview">
+                <div className="report-title">
+                  <div>
+                    <small>{copy.caseOne[2]}</small>
+                    <h3>{copy.caseOne[3]}</h3>
+                  </div>
+                  <span className="privacy-chip">
+                    <ShieldCheck size={13} />
+                    {copy.mosaiced}
+                  </span>
+                </div>
+                <div className="masked-grid">
+                  {copy.caseOne.slice(4, 7).map((label, i) => (
+                    <div key={label}>
+                      <small>{label}</small>
+                      <i
+                        className={`mosaic ${i !== 1 ? 'mosaic-short' : ''}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div
+                  className="allocation-bars"
+                  aria-label="Illustrative allocation chart"
+                >
+                  <i style={{ width: '82%' }} />
+                  <i style={{ width: '64%' }} />
+                  <i style={{ width: '47%' }} />
+                  <i style={{ width: '29%' }} />
+                </div>
+                <div className="report-tags">
+                  {copy.caseOne.slice(7, 12).map((label) => (
+                    <span key={label}>{label}</span>
+                  ))}
+                </div>
+              </div>
+              <p>{copy.caseOne[12]}</p>
+            </article>
+            <article className="case-card">
+              <div className="case-card-top">
+                <span>{copy.caseTwo[0]}</span>
+                <span>{copy.caseTwo[1]}</span>
+              </div>
+              <div className="report-preview report-preview-dark">
+                <div className="report-title">
+                  <div>
+                    <small>{copy.caseTwo[2]}</small>
+                    <h3>{copy.caseTwo[3]}</h3>
+                  </div>
+                  <span className="privacy-chip">
+                    <ShieldCheck size={13} />
+                    {copy.mosaiced}
+                  </span>
+                </div>
+                <div className="masked-grid">
+                  {copy.caseTwo.slice(4, 7).map((label, i) => (
+                    <div key={label}>
+                      <small>{label}</small>
+                      <i
+                        className={`mosaic ${i !== 1 ? 'mosaic-short' : ''}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="risk-list">
+                  {copy.caseTwo.slice(7, 10).map((label) => (
+                    <span key={label}>
+                      <i />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+                <div className="integration-row">
+                  <Mail size={14} />
+                  <span>{copy.caseTwo[10]}</span>
+                  <MessageSquare size={14} />
+                  <span>{copy.caseTwo[11]}</span>
+                </div>
+              </div>
+              <p>{copy.caseTwo[12]}</p>
+            </article>
+            <article className="case-card case-card-wide">
+              <div className="case-card-top">
+                <span>{copy.caseThree[0]}</span>
+                <span>{copy.caseThree[1]}</span>
+              </div>
+              <div className="report-preview event-preview">
+                <div className="report-title">
+                  <div>
+                    <small>{copy.caseThree[2]}</small>
+                    <h3>{copy.caseThree[3]}</h3>
+                  </div>
+                  <span className="privacy-chip">
+                    <ShieldCheck size={13} />
+                    {copy.mosaiced}
+                  </span>
+                </div>
+                <div className="event-flow">
+                  {copy.caseThree.slice(4, 7).map((label, i) => (
+                    <div key={label}>
+                      <span>0{i + 1}</span>
+                      <small>{label}</small>
+                      <i className={`mosaic ${i === 2 ? 'mosaic-short' : ''}`} />
+                    </div>
+                  ))}
+                </div>
+                <div className="event-findings">
+                  {copy.caseThree.slice(7, 10).map((label, i) => (
+                    <span key={label}>
+                      <i className={i === 2 ? 'gap-dot' : ''} />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+                <div className="integration-row integration-row-light">
+                  <Mail size={14} />
+                  <span>{copy.caseThree[10]}</span>
+                  <MessageSquare size={14} />
+                  <span>{copy.caseThree[11]}</span>
+                </div>
+              </div>
+              <p>{copy.caseThree[12]}</p>
+            </article>
+          </div>
+        </div>
+      </section>
 
-      <section id="principles" className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36"><span className="section-index">{copy.principlesIndex}</span><div className="mt-8 grid gap-14 lg:grid-cols-[1fr_1.15fr]"><h2 className="section-title">{copy.principlesTitle}<br/><span className="serif-italic text-primary">{copy.principlesAccent}</span></h2><div className="principle-list">{copy.principles.map((item,i)=><div key={item[0]}><span>0{i+1}</span><p><strong>{item[0]}</strong>{item[1]}</p></div>)}</div></div></section>
+      <section
+        id="principles"
+        className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36"
+      >
+        <span className="section-index">{copy.principlesIndex}</span>
+        <div className="mt-8 grid gap-14 lg:grid-cols-[1fr_1.15fr]">
+          <h2 className="section-title">
+            {copy.principlesTitle}
+            <br />
+            <span className="serif-italic text-primary">
+              {copy.principlesAccent}
+            </span>
+          </h2>
+          <div className="principle-list">
+            {copy.principles.map((item, i) => (
+              <div key={item[0]}>
+                <span>0{i + 1}</span>
+                <p>
+                  <strong>{item[0]}</strong>
+                  {item[1]}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <section id="contact" className="cta-wrap"><div className="cta-orbit" aria-hidden="true"/><div className="relative z-10 mx-auto max-w-4xl px-6 py-28 text-center lg:py-36"><span className="section-index text-white/35">{copy.beta}</span><h2 className="mt-7 text-5xl font-medium leading-[.95] tracking-[-.06em] text-white sm:text-7xl">{copy.ctaTitle}<br/>{copy.ctaTail} <span className="serif-italic text-[#dc8473]">{copy.ctaAccent}</span></h2><p className="mx-auto mt-7 max-w-xl text-base leading-7 text-white/50">{copy.ctaCopy}</p><div className="mx-auto mt-9 max-w-md"><WaitlistForm source="footer" inverted locale={locale}/></div></div></section>
-      <footer className="bg-[#171916] px-6 pb-10 pt-8 text-white/45 lg:px-10"><div className="mx-auto flex max-w-7xl flex-col gap-5 border-t border-white/10 pt-8 text-xs sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3 text-white"><span className="brand-mark"><span/></span><strong className="font-mono tracking-[.12em]">REDWOOD</strong></div><p>{copy.footer}</p><p>© 2026 Cortex Hubs</p></div></footer>
+      <section id="contact" className="cta-wrap">
+        <div className="cta-orbit" aria-hidden="true" />
+        <div className="relative z-10 mx-auto max-w-4xl px-6 py-28 text-center lg:py-36">
+          <span className="section-index text-white/35">{copy.beta}</span>
+          <h2 className="mt-7 text-5xl font-medium leading-[.95] tracking-[-.06em] text-white sm:text-7xl">
+            {copy.ctaTitle}
+            <br />
+            {copy.ctaTail}{' '}
+            <span className="serif-italic text-[#dc8473]">
+              {copy.ctaAccent}
+            </span>
+          </h2>
+          <p className="mx-auto mt-7 max-w-xl text-base leading-7 text-white/50">
+            {copy.ctaCopy}
+          </p>
+          <div className="mx-auto mt-9 max-w-md">
+            <WaitlistForm source="footer" inverted locale={locale} />
+          </div>
+        </div>
+      </section>
+      <footer className="bg-[#171916] px-6 pb-10 pt-8 text-white/45 lg:px-10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 border-t border-white/10 pt-8 text-xs sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3 text-white">
+            <span className="brand-mark">
+              <span />
+            </span>
+            <strong className="font-mono tracking-[.12em]">REDWOOD</strong>
+          </div>
+          <p>{copy.footer}</p>
+          <p>© 2026 Cortex Hubs</p>
+        </div>
+      </footer>
     </main>
   );
 }

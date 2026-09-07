@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import {
   ArrowRight,
   BarChart3,
@@ -52,6 +53,25 @@ const capabilityIcons = [
   BriefcaseBusiness,
   CalendarClock,
 ];
+
+const reportImages = [
+  {
+    src: '/cases/competitive-scorecard.png',
+    width: 1080,
+    height: 678,
+    title: 'Competitive landscape scorecard',
+    description:
+      'A methodology-led comparison of local financial research and portfolio operations systems.',
+  },
+  {
+    src: '/cases/ibkr-holdings-risk-report-en-mosaiced.png',
+    width: 1733,
+    height: 908,
+    title: 'IBKR holdings risk report',
+    description:
+      'An English portfolio-risk snapshot with personal figures irreversibly mosaiced.',
+  },
+] as const;
 
 const content = {
   en: {
@@ -897,6 +917,25 @@ export default function Home() {
               </h2>
             </div>
             <p className="section-copy">{copy.casesCopy}</p>
+          </div>
+          <div className="report-gallery" aria-label="Redwood report examples">
+            {reportImages.map((report) => (
+              <figure className="report-gallery-item" key={report.src}>
+                <div className="report-gallery-frame">
+                  <Image
+                    src={report.src}
+                    width={report.width}
+                    height={report.height}
+                    sizes="(max-width: 900px) 100vw, 50vw"
+                    alt={report.title}
+                  />
+                </div>
+                <figcaption>
+                  <strong>{report.title}</strong>
+                  <span>{report.description}</span>
+                </figcaption>
+              </figure>
+            ))}
           </div>
           <div className="case-grid">
             <article className="case-card">

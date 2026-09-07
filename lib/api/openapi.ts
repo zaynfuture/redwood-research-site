@@ -31,7 +31,7 @@ export const openApiDocument = {
   components: {
     securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer' } },
     schemas: {
-      LoginRequest: { type: 'object', additionalProperties: false, required: ['email', 'password'], properties: { email: { type: 'string', format: 'email' }, password: { type: 'string', minLength: 12, maxLength: 128 } } },
+      LoginRequest: { type: 'object', additionalProperties: false, required: ['email', 'password'], properties: { email: { type: 'string', format: 'email' }, password: { type: 'string', minLength: 12, maxLength: 128 }, turnstile_token: { type: 'string', maxLength: 2048, description: 'Required after repeated login attempts from one IP.' } } },
       QueryRequest: { type: 'object', additionalProperties: false, required: ['input'], properties: { input: { type: 'string', minLength: 1, maxLength: 8000 } } },
     },
   },

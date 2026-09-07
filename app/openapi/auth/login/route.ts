@@ -7,6 +7,7 @@ import {
   safeEqualHex,
   validatePassword,
 } from '@/lib/api/security';
+import { turnstileSiteKey, verifyTurnstile } from '@/lib/api/turnstile';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,8 +20,18 @@ export async function POST(request: Request): Promise<Response> {
   const password = body?.password;
   if (!email || !validatePassword(password)) return error('invalid_request', 'Invalid request.', 400);
   const source = request.headers.get('cf-connecting-ip') ?? 'unknown';
-  if (!(await admitLoginAttempt(`${source}:${email}`))) {
+  const attempts = await admitLoginAttempt(source);
+  if (attempts === null) {
     return error('too_many_attempts', 'Too many login attempts. Try again later.', 429);
+  }
+  if (attempts > 3 && !(await verifyTurnstile(body?.turnstile_token, source))) {
+    const siteKey = turnstileSiteKey();
+    if (!siteKey) return error('captcha_unavailable', 'Human verification is temporarily unavailable.', 503);
+    return json({
+      error: { code: 'captcha_required', message: 'Complete human verification before retrying.' },
+      challenge: { provider: 'turnstile', site_key: siteKey, action: 'login' },
+      request_id: crypto.randomUUID(),
+    }, 403);
   }
 
   const user = await findUser(email);

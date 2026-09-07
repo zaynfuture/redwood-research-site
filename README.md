@@ -64,4 +64,9 @@ Do not commit the generated SQL or password. Sessions expire after 24 hours. `/o
 consume quota; every admitted `/openapi/query` call consumes one request even if the private service
 later fails.
 
+After three login attempts from the same IP in a 15-minute window, `/openapi/auth/login` requires a
+single-use Cloudflare Turnstile token with action `login`. Configure `TURNSTILE_SITE_KEY`,
+`TURNSTILE_SECRET_KEY`, and `TURNSTILE_EXPECTED_HOSTNAME` as hosted runtime values. The server validates
+the token, source IP, action, and hostname before checking credentials.
+
 © 2026 Cortex Hubs

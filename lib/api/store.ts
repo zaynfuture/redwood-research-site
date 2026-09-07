@@ -69,7 +69,7 @@ export async function consumeQuota(user: AuthenticatedUser, date: string): Promi
   return row ? user.dailyLimit - row.used : null;
 }
 
-export async function admitLoginAttempt(identity: string, now = new Date()): Promise<boolean> {
+export async function admitLoginAttempt(identity: string, now = new Date()): Promise<number | null> {
   const identityHash = await sha256(identity);
   const windowMs = 15 * 60 * 1000;
   const windowStart = new Date(Math.floor(now.getTime() / windowMs) * windowMs).toISOString();
@@ -78,5 +78,5 @@ export async function admitLoginAttempt(identity: string, now = new Date()): Pro
      ON CONFLICT(identity_hash, window_start) DO UPDATE SET attempts = attempts + 1
      WHERE attempts < 10 RETURNING attempts`,
   ).bind(identityHash, windowStart).first<{ attempts: number }>();
-  return row !== null;
+  return row?.attempts ?? null;
 }

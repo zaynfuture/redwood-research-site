@@ -1,3 +1,6 @@
 # Local development only. Copy to .dev.vars and replace both placeholders.
 REDWOOD_API_UPSTREAM=https://private-api.example.com/query
 REDWOOD_API_SERVICE_TOKEN=replace-with-a-random-64-character-secret
+TURNSTILE_SITE_KEY=replace-with-the-public-widget-site-key
+TURNSTILE_SECRET_KEY=replace-with-the-private-widget-secret
+TURNSTILE_EXPECTED_HOSTNAME=redwoodresearch.cortexhubs.com

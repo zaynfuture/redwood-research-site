@@ -3,6 +3,7 @@ import { boundedJson, error, json } from '@/lib/api/http';
 import {
   hashPassword,
   normalizeEmail,
+  PASSWORD_ITERATIONS,
   randomHex,
   safeEqualHex,
   validatePassword,
@@ -38,7 +39,7 @@ export async function POST(request: Request): Promise<Response> {
   const candidate = await hashPassword(
     password,
     user?.passwordSalt ?? DUMMY_SALT,
-    user?.passwordIterations ?? 210_000,
+    user?.passwordIterations ?? PASSWORD_ITERATIONS,
   );
   const valid = await safeEqualHex(candidate, user?.passwordHash ?? DUMMY_HASH);
   if (!user || !valid) return error('invalid_credentials', 'Email or password is incorrect.', 401);

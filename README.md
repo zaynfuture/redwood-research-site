@@ -51,7 +51,12 @@ and does not log request text.
 
 For local development, copy `.dev.vars.example` to `.dev.vars`. The real `.dev.vars` file is ignored by
 Git. Shell-profile variables affect only local processes and are not available to the hosted Worker;
-configure production values as Sites/Cloudflare runtime secrets during deployment.
+configure production secrets with `wrangler secret put`. Non-secret production bindings and variables
+are declared in `wrangler.jsonc`.
+
+This project deploys directly to the independent Cloudflare Worker `redwood-api-gateway`; it does not
+use Sites hosting. Apply D1 migrations with `npm run db:migrate:remote`, then publish with
+`npm run deploy`. The Worker owns the custom domain `redwoodresearch.cortexhubs.com` directly.
 
 Provision a user by generating a one-time SQL statement without putting the password on the command
 line, then execute it against the bound D1 database through the approved deployment workflow:

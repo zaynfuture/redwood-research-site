@@ -2,7 +2,8 @@ import { timingSafeEqual } from 'node:crypto';
 
 const encoder = new TextEncoder();
 
-export const PASSWORD_ITERATIONS = 210_000;
+// Cloudflare Workers Web Crypto currently caps PBKDF2 at 100,000 iterations.
+export const PASSWORD_ITERATIONS = 100_000;
 
 function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');

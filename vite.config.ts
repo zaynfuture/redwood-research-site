@@ -4,7 +4,7 @@ import vinext from 'vinext';
 import { defineConfig } from 'vite';
 import hostingConfig from './.openai/hosting.json';
 
-const { r2 } = hostingConfig;
+const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === 'seatbelt';
@@ -12,8 +12,8 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === 'seatbelt';
 const localBindingConfig = {
   name: 'redwood-research',
   main: 'vinext/server/fetch-handler',
-  compatibility_date: '2026-08-31',
-  compatibility_flags: ['nodejs_compat'],
+  compatibility_date: '2026-05-22',
+  compatibility_flags: ['nodejs_compat', 'nodejs_compat_populate_process_env'],
   workers_dev: true,
   routes: [
     {
@@ -24,6 +24,15 @@ const localBindingConfig = {
   observability: {
     enabled: true,
   },
+  d1_databases: d1
+    ? [
+        {
+          binding: d1,
+          database_name: 'redwood-site-api',
+          database_id: 'local-redwood-site-api',
+        },
+      ]
+    : [],
   r2_buckets: r2
     ? [
         {

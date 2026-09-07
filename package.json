@@ -9,6 +9,7 @@
     "dev": "vinext dev",
     "build": "vinext build",
     "start": "wrangler dev --config dist/server/wrangler.json",
+    "api:user": "node scripts/create-api-user.mjs",
     "lint": "oxlint",
     "format": "oxfmt"
   },

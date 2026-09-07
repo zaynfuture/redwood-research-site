@@ -36,4 +36,32 @@ private evidence, account identifiers, portfolio holdings, provider configuratio
 deployment credentials, exact decision thresholds, or proprietary agent instructions to this repository
 or the rendered site.
 
+## Public API gateway
+
+The Cloudflare-hosted gateway is served at `/openapi`. It exposes email/password login, a daily-quota
+endpoint, and a text-query endpoint. Each enabled user has 100 query calls per UTC day by default.
+User records, session-token hashes, and quota counters are stored in D1; passwords are stored only as
+salted PBKDF2-SHA256 hashes.
+
+The gateway does not contain the private research engine. Configure `REDWOOD_API_UPSTREAM` with its
+HTTPS text-processing URL and `REDWOOD_API_SERVICE_TOKEN` with the service credential in the hosted
+runtime. The private endpoint must return JSON containing the final result only. The gateway removes
+common internal reasoning and prompt fields as a second boundary, never forwards the user's API token,
+and does not log request text.
+
+For local development, copy `.dev.vars.example` to `.dev.vars`. The real `.dev.vars` file is ignored by
+Git. Shell-profile variables affect only local processes and are not available to the hosted Worker;
+configure production values as Sites/Cloudflare runtime secrets during deployment.
+
+Provision a user by generating a one-time SQL statement without putting the password on the command
+line, then execute it against the bound D1 database through the approved deployment workflow:
+
+```bash
+REDWOOD_NEW_USER_PASSWORD='a-long-random-password' npm run api:user -- user@example.com
+```
+
+Do not commit the generated SQL or password. Sessions expire after 24 hours. `/openapi/quota` does not
+consume quota; every admitted `/openapi/query` call consumes one request even if the private service
+later fails.
+
 © 2026 Cortex Hubs

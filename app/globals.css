@@ -592,16 +592,20 @@ body {
   min-width: 0;
 }
 .report-gallery-frame {
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 18px;
-  background: #fff;
+  background: #fffdf8;
   box-shadow: 0 16px 45px rgba(30, 26, 22, 0.08);
 }
 .report-gallery-frame img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: contain;
 }
 .report-gallery-item figcaption {
   display: grid;

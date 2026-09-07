@@ -24,7 +24,14 @@ export const openApiDocument = {
       post: {
         summary: 'Submit text and receive the final research result', security: [{ bearerAuth: [] }],
         requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/QueryRequest' } } } },
-        responses: { '200': { description: 'Final result' }, '401': { description: 'Unauthorized' }, '429': { description: 'Daily quota exhausted' } },
+        responses: {
+          '200': {
+            description: 'Final evidence-based result',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/QueryResponse' } } },
+          },
+          '401': { description: 'Unauthorized' },
+          '429': { description: 'Daily quota exhausted' },
+        },
       },
     },
   },
@@ -33,6 +40,30 @@ export const openApiDocument = {
     schemas: {
       LoginRequest: { type: 'object', additionalProperties: false, required: ['email', 'password'], properties: { email: { type: 'string', format: 'email' }, password: { type: 'string', minLength: 12, maxLength: 128 }, turnstile_token: { type: 'string', maxLength: 2048, description: 'Required after repeated login attempts from one IP.' } } },
       QueryRequest: { type: 'object', additionalProperties: false, required: ['input'], properties: { input: { type: 'string', minLength: 1, maxLength: 8000 } } },
+      ResearchResult: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['answer', 'evidence', 'gaps', 'warnings', 'truncated', 'estimated_tokens', 'observation_id'],
+        properties: {
+          answer: { type: 'string', maxLength: 3000, description: 'Bounded final text derived only from remotely authorized evidence.' },
+          evidence: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          gaps: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          warnings: { type: 'array', items: {} },
+          truncated: { type: 'boolean' },
+          estimated_tokens: { type: 'integer', minimum: 0, maximum: 1500 },
+          observation_id: { type: ['string', 'null'] },
+        },
+      },
+      QueryResponse: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['result', 'remaining', 'request_id'],
+        properties: {
+          result: { $ref: '#/components/schemas/ResearchResult' },
+          remaining: { type: 'integer', minimum: 0, maximum: 99 },
+          request_id: { type: 'string', format: 'uuid' },
+        },
+      },
     },
   },
 } as const;

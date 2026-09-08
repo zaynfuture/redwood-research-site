@@ -24,7 +24,8 @@
   "vars": {
     "REDWOOD_API_UPSTREAM": "https://private-api.cortexhubs.com/query",
     "TURNSTILE_SITE_KEY": "0x4AAAAAAErk-fcAQYCqFkKi",
-    "TURNSTILE_EXPECTED_HOSTNAME": "redwoodresearch.cortexhubs.com"
+    "TURNSTILE_EXPECTED_HOSTNAME": "redwoodresearch.cortexhubs.com",
+    "STRIPE_INDIVIDUAL_PRICE_ID": "price_configure_in_stripe"
   },
   "observability": {
     "enabled": true,

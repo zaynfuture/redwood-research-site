@@ -29,6 +29,37 @@ The private-beta call to action opens the visitor's email application with a pre
 to `request@cortexhubs.com`. The website does not collect contact-form data or send mail on a visitor's
 behalf.
 
+## Member accounts and billing
+
+The public product site now includes email/password registration, Google OpenID Connect sign-in, a
+member dashboard, a subscription-gated research chatbot, and Stripe Checkout for credit-card billing.
+The individual plan is presented as US$99 per month and includes 1,000 chatbot calls per UTC calendar
+month, a monthly selected-stock analysis, and a monthly market outlook. Enterprise work remains a
+consultation-led custom engagement.
+
+Apply all migrations through `drizzle/0004_enterprise_inquiries.sql` before enabling member routes. Configure a Google web OAuth client
+with `/api/auth/google/callback` as an authorized redirect URI. Configure a recurring US$99 Stripe Price,
+then set `STRIPE_INDIVIDUAL_PRICE_ID`; add `/api/billing/webhook` as a Stripe webhook endpoint for
+`checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted`.
+The webhook body is signature-verified before subscription state is changed.
+
+The private research workflow can create or update the two monthly member deliverables through
+`PUT /api/internal/research/monthly`, authenticated with `REDWOOD_PUBLISH_TOKEN`. Payloads use a
+`YYYY-MM` period, a kind of `stock_analysis` or `market_outlook`, plain-text title/summary/body fields,
+an evidence-reference array whose entries preserve an `id`, label, and optional locator, and an explicit
+`publish` boolean. Published records require at least one evidence identifier. Draft records are never returned to
+members. Published records are available only to active individual, enterprise, or legacy members at
+`GET /api/research/monthly`.
+
+Required hosted secrets are `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `STRIPE_SECRET_KEY`,
+`STRIPE_WEBHOOK_SECRET`, `REDWOOD_API_SERVICE_TOKEN`, and `REDWOOD_PUBLISH_TOKEN`.
+`STRIPE_INDIVIDUAL_PRICE_ID` may be set as a non-secret Worker variable. Do not commit live values.
+
+Enterprise consultation requests are submitted to `POST /api/enterprise/inquiries`, rate-limited by a
+one-way hash of the source address, and stored in D1 without storing the address itself. Retrieve the
+newest requests through `GET /api/internal/enterprise/inquiries` with the separate
+`REDWOOD_ENTERPRISE_INBOX_TOKEN`; this endpoint is not linked from the public interface.
+
 ## Disclosure boundary
 
 Keep public copy at the product-principle and capability level. Do not add secrets, personal file paths,

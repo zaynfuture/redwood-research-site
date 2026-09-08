@@ -1,6 +1,17 @@
 # Local development only. Copy to .dev.vars and replace both placeholders.
 REDWOOD_API_UPSTREAM=https://private-api.example.com/query
 REDWOOD_API_SERVICE_TOKEN=replace-with-a-random-64-character-secret
+# Separate credential used by the private research workflow to publish member reports.
+REDWOOD_PUBLISH_TOKEN=replace-with-a-different-random-64-character-secret
+# Read-only credential for retrieving submitted enterprise inquiries.
+REDWOOD_ENTERPRISE_INBOX_TOKEN=replace-with-another-random-64-character-secret
 TURNSTILE_SITE_KEY=replace-with-the-public-widget-site-key
 TURNSTILE_SECRET_KEY=replace-with-the-private-widget-secret
 TURNSTILE_EXPECTED_HOSTNAME=redwoodresearch.cortexhubs.com
+
+# Member sign-in and subscription billing.
+GOOGLE_CLIENT_ID=replace-with-google-oauth-client-id
+GOOGLE_CLIENT_SECRET=replace-with-google-oauth-client-secret
+STRIPE_SECRET_KEY=sk_test_replace_me
+STRIPE_WEBHOOK_SECRET=whsec_replace_me
+STRIPE_INDIVIDUAL_PRICE_ID=price_replace_me

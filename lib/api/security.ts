@@ -62,3 +62,31 @@ export function bearerToken(request: Request): string | null {
   const token = authorization.slice(7).trim();
   return /^[0-9a-f]{64}$/i.test(token) ? token : null;
 }
+
+export function cookieValue(request: Request, name: string): string | null {
+  const cookie = request.headers.get('cookie');
+  if (!cookie) return null;
+  for (const part of cookie.split(';')) {
+    const [key, ...value] = part.trim().split('=');
+    if (key === name) return decodeURIComponent(value.join('='));
+  }
+  return null;
+}
+
+export function sessionCookie(token: string, maxAge = 60 * 60 * 24 * 30): string {
+  return `redwood_session=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+}
+
+export function clearSessionCookie(): string {
+  return 'redwood_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
+}
+
+export function sameOriginRequest(request: Request): boolean {
+  const origin = request.headers.get('origin');
+  if (!origin) return false;
+  try {
+    return new URL(origin).origin === new URL(request.url).origin;
+  } catch {
+    return false;
+  }
+}

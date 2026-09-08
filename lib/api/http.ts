@@ -1,5 +1,5 @@
-import { authenticate } from './store';
-import { bearerToken } from './security';
+import { authenticate, authenticateAccountSession } from './store';
+import { bearerToken, cookieValue } from './security';
 
 export function json(data: unknown, status = 200, extraHeaders: HeadersInit = {}): Response {
   const headers = new Headers(extraHeaders);
@@ -20,9 +20,14 @@ export async function requireUser(request: Request) {
   return token ? authenticate(token) : null;
 }
 
-export async function boundedJson(request: Request): Promise<Record<string, unknown> | null> {
+export async function requireAccountUser(request: Request) {
+  const token = cookieValue(request, 'redwood_session');
+  return token ? authenticateAccountSession(token) : null;
+}
+
+export async function boundedJson(request: Request, maxBytes = 16_384): Promise<Record<string, unknown> | null> {
   const contentLength = Number(request.headers.get('content-length') ?? '0');
-  if (contentLength > 16_384) return null;
+  if (contentLength > maxBytes) return null;
   try {
     const body: unknown = await request.json();
     return body !== null && typeof body === 'object' && !Array.isArray(body) ? body as Record<string, unknown> : null;

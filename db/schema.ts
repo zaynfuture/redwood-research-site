@@ -4,4 +4,10 @@ export const schema = {
   sessions: 'api_sessions',
   usage: 'daily_api_usage',
   loginAttempts: 'login_attempts',
+  accountSessions: 'account_sessions',
+  oauthStates: 'oauth_states',
+  monthlyChatUsage: 'monthly_chat_usage',
+  stripeEvents: 'stripe_events',
+  monthlyResearch: 'monthly_research',
+  enterpriseInquiries: 'enterprise_inquiries',
 } as const;

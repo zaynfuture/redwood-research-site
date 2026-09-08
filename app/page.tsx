@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   ArrowRight,
   BarChart3,
@@ -75,7 +76,8 @@ const reportImages = [
 
 const content = {
   en: {
-    nav: ['Framework', 'Capabilities', 'Cases', 'Principles'],
+    nav: ['Framework', 'Capabilities', 'Cases', 'Principles', 'Plans'],
+    account: 'Sign in',
     eyebrow: 'Built for evidence-led investing',
     heroLead: 'Research,',
     heroAccent: 'rooted',
@@ -272,6 +274,18 @@ const content = {
       ],
       ['Human decides', 'The system supports research; the investor decides.'],
     ],
+    pricingIndex: '05 / MEMBERSHIP',
+    pricingTitle: 'Research access,',
+    pricingAccent: 'clearly scoped.',
+    pricingCopy: 'One individual plan for recurring research and evidence-led conversations. Enterprise work is designed around your workflow, data boundaries, and delivery needs.',
+    individual: 'Individual',
+    monthly: 'US$99 / month',
+    individualFeatures: ['1,000 chatbot calls each month', 'Monthly stock research selection', 'Monthly market outlook', 'Evidence-led answers for authorized users'],
+    subscribe: 'Start individual plan',
+    enterprise: 'Enterprise',
+    enterprisePrice: 'Custom engagement',
+    enterpriseFeatures: ['Equity, portfolio, and research-system integration', 'Internal documents and private knowledge integration', 'IM, email, and workflow delivery integration', 'Detailed pricing through consultation'],
+    contactSales: 'Discuss an enterprise plan',
     beta: 'PRIVATE BETA / 2026',
     ctaTitle: 'Built for investors',
     ctaTail: 'who go',
@@ -281,7 +295,8 @@ const content = {
     footer: 'Research infrastructure for thoughtful investors.',
   },
   'zh-CN': {
-    nav: ['研究框架', '平台能力', '案例', '产品原则'],
+    nav: ['研究框架', '平台能力', '案例', '产品原则', '会员方案'],
+    account: '登录',
     eyebrow: '为证据驱动的投资研究而构建',
     heroLead: '研究，',
     heroAccent: '扎根',
@@ -435,6 +450,18 @@ const content = {
       ['默认本地处理', '私有知识与敏感数据保留在本地。'],
       ['由人决策', '系统辅助研究，投资者做出决定。'],
     ],
+    pricingIndex: '05 / 会员方案',
+    pricingTitle: '清晰范围，',
+    pricingAccent: '持续深度研究。',
+    pricingCopy: '个人版提供持续研究与证据驱动的对话；企业版围绕你的工作流、数据边界与交付需求进行深度定制。',
+    individual: '个人版',
+    monthly: 'US$99 / 月',
+    individualFeatures: ['每月 1,000 次 Chatbot 调用', '每月精选股票分析', '每月市场行情展望', '仅向授权用户提供证据驱动回答'],
+    subscribe: '开通个人版',
+    enterprise: '企业版',
+    enterprisePrice: '深度定制',
+    enterpriseFeatures: ['股票、持仓与投研系统集成', '内部文档与私有知识系统集成', 'IM、邮件与工作流交付集成', '具体费率详细咨询'],
+    contactSales: '咨询企业方案',
     beta: '私有测试 / 2026',
     ctaTitle: '为深度研究的',
     ctaTail: '投资者而生',
@@ -443,7 +470,8 @@ const content = {
     footer: '为审慎投资者打造的研究基础设施。',
   },
   'zh-TW': {
-    nav: ['研究框架', '平台能力', '案例', '產品原則'],
+    nav: ['研究框架', '平台能力', '案例', '產品原則', '會員方案'],
+    account: '登入',
     eyebrow: '為證據驅動的投資研究而建',
     heroLead: '研究，',
     heroAccent: '扎根',
@@ -601,6 +629,18 @@ const content = {
       ['預設本地處理', '私有知識與敏感資料保留在本地。'],
       ['由人決策', '系統輔助研究，投資者做出決定。'],
     ],
+    pricingIndex: '05 / 會員方案',
+    pricingTitle: '清晰範圍，',
+    pricingAccent: '持續深度研究。',
+    pricingCopy: '個人版提供持續研究與證據驅動的對話；企業版圍繞你的工作流、資料邊界與交付需求進行深度客製。',
+    individual: '個人版',
+    monthly: 'US$99 / 月',
+    individualFeatures: ['每月 1,000 次 Chatbot 呼叫', '每月精選股票分析', '每月市場行情展望', '僅向授權使用者提供證據驅動回答'],
+    subscribe: '開通個人版',
+    enterprise: '企業版',
+    enterprisePrice: '深度客製',
+    enterpriseFeatures: ['股票、持倉與投研系統整合', '內部文件與私有知識系統整合', 'IM、郵件與工作流交付整合', '具體費率詳細諮詢'],
+    contactSales: '諮詢企業方案',
     beta: '私有測試 / 2026',
     ctaTitle: '為深度研究的',
     ctaTail: '投資者而生',
@@ -649,7 +689,7 @@ export default function Home() {
           {copy.nav.map((label, i) => (
             <a
               className="nav-link"
-              href={['#framework', '#capabilities', '#cases', '#principles'][i]}
+              href={['#framework', '#capabilities', '#cases', '#principles', '#pricing'][i]}
               key={label}
             >
               {label}
@@ -671,6 +711,9 @@ export default function Home() {
               ))}
             </select>
           </label>
+          <Link href="/signin" className="button button-outline hidden sm:inline-flex">
+            {copy.account}
+          </Link>
           <WaitlistForm source="header" locale={locale} />
         </div>
       </nav>
@@ -1094,6 +1137,46 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section id="pricing" className="pricing-section border-t border-border">
+        <div className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36">
+          <div className="pricing-heading">
+            <div>
+              <span className="section-index">{copy.pricingIndex}</span>
+              <h2 className="section-title">
+                {copy.pricingTitle}<br />
+                <span className="serif-italic text-primary">{copy.pricingAccent}</span>
+              </h2>
+            </div>
+            <p className="section-copy">{copy.pricingCopy}</p>
+          </div>
+          <div className="pricing-grid">
+            <article className="price-card price-card-featured">
+              <div className="price-card-top">
+                <span>{copy.individual}</span>
+                <span>01</span>
+              </div>
+              <strong>{copy.monthly}</strong>
+              <ul>
+                {copy.individualFeatures.map((feature) => <li key={feature}><CheckCircle2 size={16} />{feature}</li>)}
+              </ul>
+              <Link href="/signup" className="button button-primary">{copy.subscribe}<ArrowRight size={16} /></Link>
+            </article>
+            <article className="price-card">
+              <div className="price-card-top">
+                <span>{copy.enterprise}</span>
+                <span>02</span>
+              </div>
+              <strong>{copy.enterprisePrice}</strong>
+              <ul>
+                {copy.enterpriseFeatures.map((feature) => <li key={feature}><CheckCircle2 size={16} />{feature}</li>)}
+              </ul>
+              <Link href="/enterprise" className="button button-outline">{copy.contactSales}<ArrowRight size={16} /></Link>
+            </article>
+          </div>
+          <p className="pricing-disclosure">Research support only. No order execution. Market analysis is informational and does not guarantee investment outcomes.</p>
         </div>
       </section>
 

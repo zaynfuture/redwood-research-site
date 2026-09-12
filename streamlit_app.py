@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import streamlit as st
@@ -12,9 +13,12 @@ from redwood_streamlit.settings import boolean_setting, setting
 from redwood_streamlit.style import apply_style, footer
 
 
+ICON_PATH = Path(__file__).resolve().parent / "assets" / "rr-icon.jpeg"
+
+
 st.set_page_config(
     page_title="Redwood Research",
-    page_icon="🌲",
+    page_icon=str(ICON_PATH),
     layout="wide",
     initial_sidebar_state="auto",
 )

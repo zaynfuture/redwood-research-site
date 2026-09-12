@@ -1,11 +1,15 @@
-# Redwood
+# Redwood Streamlit site
 
-Redwood is an English-language product site for a local-first U.S. equity research platform. The
+Redwood is a Streamlit web application for a local-first U.S. equity research platform. The
 public site explains the product philosophy and research workflow without publishing private research,
 credentials, operational infrastructure, proprietary prompts, scoring parameters, or customer data.
 
-The interface supports English, Simplified Chinese, and Traditional Chinese. Language selection is
-stored only in the visitor's browser and also updates the document language for accessibility.
+`streamlit_app.py` is the primary deployment entrypoint. The former Next.js and Cloudflare Worker
+implementation remains in the repository during migration so account and billing records can be
+reconciled before that runtime is retired.
+
+The primary interface is English, with Chinese enterprise-service copy retained for the current target
+audience.
 
 ## Public product principles
 
@@ -29,21 +33,45 @@ The private-beta call to action opens the visitor's email application with a pre
 to `request@cortexhubs.com`. The website does not collect contact-form data or send mail on a visitor's
 behalf.
 
+## Streamlit Cloud deployment
+
+1. Push this repository to GitHub and create an app in Streamlit Community Cloud.
+2. Select `streamlit_app.py` as the entrypoint and Python 3.12 as the runtime.
+3. Copy `.streamlit/secrets.toml.example` into the app's Secrets editor and replace every placeholder.
+4. In the Google OAuth web client, register the Streamlit callback exactly as
+   `https://<your-app>.streamlit.app/oauth2callback`.
+5. Deploy the separate `redwood-research` FastAPI service from its `Dockerfile.api`, then configure its
+   HTTPS origin as `REDWOOD_API_BASE_URL` and `<origin>/docs` as `REDWOOD_API_DOCS_URL`.
+
+The Streamlit server calls `POST /v1/query` with `REDWOOD_API_SERVICE_TOKEN`. That token stays in
+Streamlit secrets and is never rendered in the browser. The API must use HTTPS in deployed mode.
+
+Google OIDC is enabled with `AUTH_ENABLED = true`. Research access fails closed: add paid or test
+accounts to `REDWOOD_AUTHORIZED_EMAILS`, or set `ALLOW_ALL_AUTHENTICATED_USERS = true` only when a
+separate entitlement check is in place. `AUTH_ENABLED = false` is intended only for local development.
+
+For local UI development:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/streamlit run streamlit_app.py
+```
+
 ## Member accounts and billing
 
-The public product site now includes email/password registration, Google OpenID Connect sign-in, a
-member dashboard, a subscription-gated research chatbot, and Stripe Checkout for credit-card billing.
+The Streamlit site uses native Google OpenID Connect sign-in, a membership page, and an authenticated
+research chatbot. A configured Stripe Payment Link provides credit-card checkout.
 The individual plan is presented as US$99 per month and includes 1,000 chatbot calls per UTC calendar
 month, a monthly selected-stock analysis, and a monthly market outlook. Enterprise work remains a
 consultation-led custom engagement.
 
-Apply all migrations through `drizzle/0004_enterprise_inquiries.sql` before enabling member routes. Configure a Google web OAuth client
-with `/api/auth/google/callback` as an authorized redirect URI. Configure a recurring US$99 Stripe Price,
-then set `STRIPE_INDIVIDUAL_PRICE_ID`; add `/api/billing/webhook` as a Stripe webhook endpoint for
-`checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted`.
-The webhook body is signature-verified before subscription state is changed.
+The current Streamlit migration uses `REDWOOD_AUTHORIZED_EMAILS` as a temporary fail-closed entitlement
+list. Stripe payment does not automatically grant access yet. Keep the legacy Cloudflare webhook and D1
+records active until a durable hosted entitlement service has been connected and existing memberships
+have been migrated.
 
-The private research workflow can create or update the two monthly member deliverables through
+The legacy Cloudflare workflow can create or update the two monthly member deliverables through
 `PUT /api/internal/research/monthly`, authenticated with `REDWOOD_PUBLISH_TOKEN`. Payloads use a
 `YYYY-MM` period, a kind of `stock_analysis` or `market_outlook`, plain-text title/summary/body fields,
 an evidence-reference array whose entries preserve an `id`, label, and optional locator, and an explicit
@@ -51,11 +79,11 @@ an evidence-reference array whose entries preserve an `id`, label, and optional 
 members. Published records are available only to active individual, enterprise, or legacy members at
 `GET /api/research/monthly`.
 
-Required hosted secrets are `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `STRIPE_SECRET_KEY`,
-`STRIPE_WEBHOOK_SECRET`, `REDWOOD_API_SERVICE_TOKEN`, and `REDWOOD_PUBLISH_TOKEN`.
-`STRIPE_INDIVIDUAL_PRICE_ID` may be set as a non-secret Worker variable. Do not commit live values.
+Required Streamlit secrets are documented in `.streamlit/secrets.toml.example`. Never commit a live
+`secrets.toml`, Google client secret, API service token, or Stripe credential.
 
-Enterprise consultation requests are submitted to `POST /api/enterprise/inquiries`, rate-limited by a
+In the Streamlit app, enterprise consultation opens an addressed email. In the legacy runtime,
+consultation requests are submitted to `POST /api/enterprise/inquiries`, rate-limited by a
 one-way hash of the source address, and stored in D1 without storing the address itself. Retrieve the
 newest requests through `GET /api/internal/enterprise/inquiries` with the separate
 `REDWOOD_ENTERPRISE_INBOX_TOKEN`; this endpoint is not linked from the public interface.
@@ -67,26 +95,30 @@ private evidence, account identifiers, portfolio holdings, provider configuratio
 deployment credentials, exact decision thresholds, or proprietary agent instructions to this repository
 or the rendered site.
 
-## Public API gateway
+## Research API
 
-The Cloudflare-hosted gateway is served at `/openapi`. It exposes email/password login, a daily-quota
-endpoint, and a text-query endpoint. Each enabled user has 100 query calls per UTC day by default.
-User records, session-token hashes, and quota counters are stored in D1; passwords are stored only as
-salted PBKDF2-SHA256 hashes.
+The separate `redwood-research` FastAPI service is the research API. It exposes `/health`, Swagger at
+`/docs`, the OpenAPI 3 schema at `/openapi.json`, and Bearer-authenticated `POST /v1/query`. The service
+performs rights-aware retrieval and returns bounded final results, evidence identifiers, gaps, warnings,
+and observation metadata.
 
-The gateway does not contain the private research engine. Configure `REDWOOD_API_UPSTREAM` with its
-HTTPS text-processing URL and `REDWOOD_API_SERVICE_TOKEN` with the service credential in the hosted
-runtime. The private endpoint must return JSON containing the final result only. The gateway removes
-common internal reasoning and prompt fields as a second boundary, never forwards the user's API token,
-and does not log request text.
+Streamlit Community Cloud is not the API host. It runs the UI, while the FastAPI process must run on an
+HTTPS application or container host. The API cannot select tools, files, prompts, or model settings and
+does not expose internal reasoning or credentials.
+
+## Legacy Cloudflare runtime
+
+The Next.js/Cloudflare Worker application, D1 migrations, and `/openapi` gateway remain available only
+for migration and rollback. Do not delete them until Google identities, Stripe subscriptions, usage
+quotas, monthly research, and enterprise inquiries have been reconciled with their replacement stores.
 
 For local development, copy `.dev.vars.example` to `.dev.vars`. The real `.dev.vars` file is ignored by
 Git. Shell-profile variables affect only local processes and are not available to the hosted Worker;
 configure production secrets with `wrangler secret put`. Non-secret production bindings and variables
 are declared in `wrangler.jsonc`.
 
-This project deploys directly to the independent Cloudflare Worker `redwood-api-gateway`; it does not
-use Sites hosting. Apply D1 migrations with `npm run db:migrate:remote`, then publish with
+The legacy runtime deploys to the independent Cloudflare Worker `redwood-api-gateway`; it does not use
+Sites hosting. Apply D1 migrations with `npm run db:migrate:remote`, then publish it with
 `npm run deploy`. The Worker owns the custom domain `redwoodresearch.cortexhubs.com` directly.
 
 Provision a user by generating a one-time SQL statement without putting the password on the command

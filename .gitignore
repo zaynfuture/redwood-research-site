@@ -40,3 +40,10 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+# Streamlit local secrets and caches
+/.streamlit/secrets.toml
+/.streamlit/credentials.toml
+/.streamlit/cache/
+__pycache__/
+.pytest_cache/

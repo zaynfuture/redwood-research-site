@@ -25,9 +25,36 @@ class ResearchApiClientTests(unittest.TestCase):
             "https://api.example.com/v1/query",
             headers={"Accept": "application/json", "Authorization": "Bearer service-secret"},
             json={"input": "inflation"},
-            timeout=60.0,
+            timeout=(5.0, 75.0),
             allow_redirects=False,
         )
+
+    @patch("redwood_streamlit.api.sleep")
+    @patch("redwood_streamlit.api.requests.request")
+    def test_retries_temporary_gateway_failure(self, request: Mock, sleep: Mock):
+        unavailable = Mock(ok=False, status_code=503)
+        success = Mock(ok=True, status_code=200)
+        success.json.return_value = {"answer": "recovered"}
+        request.side_effect = [unavailable, success]
+        client = ResearchApiClient("https://api.example.com", "token")
+
+        result = client.query("inflation")
+
+        self.assertEqual(result["answer"], "recovered")
+        self.assertEqual(request.call_count, 2)
+        sleep.assert_called_once_with(0.35)
+
+    @patch("redwood_streamlit.api.sleep")
+    @patch("redwood_streamlit.api.requests.request")
+    def test_health_uses_short_read_timeout(self, request: Mock, sleep: Mock):
+        response = Mock(ok=True, status_code=200)
+        response.json.return_value = {"status": "ok"}
+        request.return_value = response
+
+        ResearchApiClient("https://api.example.com", "").health()
+
+        self.assertEqual(request.call_args.kwargs["timeout"], (5.0, 5.0))
+        sleep.assert_not_called()
 
     def test_rejects_oversized_question_before_network(self):
         client = ResearchApiClient("https://api.example.com", "token")

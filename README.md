@@ -40,8 +40,9 @@ behalf.
 3. Copy `.streamlit/secrets.toml.example` into the app's Secrets editor and replace every placeholder.
 4. In the Google OAuth web client, register the Streamlit callback exactly as
    `https://<your-app>.streamlit.app/oauth2callback`.
-5. Deploy the separate `redwood-research` FastAPI service from its `Dockerfile.api`, then configure its
-   HTTPS origin as `REDWOOD_API_BASE_URL` and `<origin>/docs` as `REDWOOD_API_DOCS_URL`.
+5. Keep the `redwood-research` FastAPI LaunchAgent and Cloudflare Tunnel running on the local Mac. The
+   current public API origin is `https://private-api.cortexhubs.com` and Swagger is available at
+   `https://private-api.cortexhubs.com/docs`.
 
 The Streamlit server calls `POST /v1/query` with `REDWOOD_API_SERVICE_TOKEN`. That token stays in
 Streamlit secrets and is never rendered in the browser. The API must use HTTPS in deployed mode.
@@ -97,14 +98,16 @@ or the rendered site.
 
 ## Research API
 
-The separate `redwood-research` FastAPI service is the research API. It exposes `/health`, Swagger at
+The local `redwood-research` FastAPI service is the research API. It exposes `/health`, Swagger at
 `/docs`, the OpenAPI 3 schema at `/openapi.json`, and Bearer-authenticated `POST /v1/query`. The service
 performs rights-aware retrieval and returns bounded final results, evidence identifiers, gaps, warnings,
 and observation metadata.
 
-Streamlit Community Cloud is not the API host. It runs the UI, while the FastAPI process must run on an
-HTTPS application or container host. The API cannot select tools, files, prompts, or model settings and
-does not expose internal reasoning or credentials.
+Streamlit Community Cloud is not the API host. It runs the UI, while the FastAPI process stays on the
+local Mac at `127.0.0.1:8788`. A Cloudflare Tunnel publishes only the approved HTTP routes through
+HTTPS; no router port forwarding is required. The API cannot select tools, files, prompts, or model
+settings and does not expose internal reasoning or credentials. If the Mac sleeps, shuts down, or loses
+network connectivity, the research workspace remains visible but API requests will be unavailable.
 
 ## Legacy Cloudflare runtime
 

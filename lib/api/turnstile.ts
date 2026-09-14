@@ -8,6 +8,14 @@ export function turnstileSiteKey(): string | null {
   return process.env.TURNSTILE_SITE_KEY || null;
 }
 
+export function turnstileConfigured(): boolean {
+  return Boolean(
+    process.env.TURNSTILE_SITE_KEY &&
+    process.env.TURNSTILE_SECRET_KEY &&
+    process.env.TURNSTILE_EXPECTED_HOSTNAME,
+  );
+}
+
 export async function verifyTurnstile(token: unknown, remoteIp: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
   const expectedHostname = process.env.TURNSTILE_EXPECTED_HOSTNAME;

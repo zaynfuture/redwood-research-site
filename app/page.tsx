@@ -20,6 +20,7 @@ import {
   Waypoints,
 } from 'lucide-react';
 import { WaitlistForm } from '@/components/waitlist-form';
+import { SignInDialog } from '@/components/sign-in-dialog';
 
 export type Locale = 'en' | 'zh-CN' | 'zh-TW';
 
@@ -711,9 +712,7 @@ export default function Home() {
               ))}
             </select>
           </label>
-          <Link href="/signin" className="button button-outline hidden sm:inline-flex">
-            {copy.account}
-          </Link>
+          <SignInDialog label={copy.account} />
           <WaitlistForm source="header" locale={locale} />
         </div>
       </nav>

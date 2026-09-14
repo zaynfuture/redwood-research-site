@@ -1,6 +1,7 @@
 import { admitLoginAttempt, findUser } from '@/lib/api/store';
 import { boundedJson, error } from '@/lib/api/http';
 import { hashPassword, normalizeEmail, PASSWORD_ITERATIONS, safeEqualHex, sameOriginRequest, validatePassword } from '@/lib/api/security';
+import { turnstileConfigured, verifyTurnstile } from '@/lib/api/turnstile';
 import { signedInResponse } from '@/lib/auth/account';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +14,14 @@ export async function POST(request: Request): Promise<Response> {
   const email = normalizeEmail(body?.email);
   const password = body?.password;
   if (!email || !validatePassword(password)) return error('invalid_request', 'Invalid request.', 400);
-  const attempts = await admitLoginAttempt(request.headers.get('cf-connecting-ip') ?? 'unknown');
+  const source = request.headers.get('cf-connecting-ip') ?? 'unknown';
+  if (!turnstileConfigured()) {
+    return error('captcha_unavailable', 'Human verification is temporarily unavailable.', 503);
+  }
+  if (!(await verifyTurnstile(body?.turnstile_token, source))) {
+    return error('captcha_required', 'Complete human verification before signing in.', 403);
+  }
+  const attempts = await admitLoginAttempt(source);
   if (attempts === null) return error('too_many_attempts', 'Too many login attempts. Try again later.', 429);
   const user = await findUser(email);
   const candidate = await hashPassword(password, user?.passwordSalt ?? DUMMY_SALT, user?.passwordIterations ?? PASSWORD_ITERATIONS);

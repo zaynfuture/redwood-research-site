@@ -377,33 +377,6 @@ body {
   padding: 26px;
   box-shadow: 0 20px 60px rgba(39, 33, 28, 0.07);
 }
-.google-button {
-  display: flex;
-  height: 46px;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: white;
-  font-size: 0.84rem;
-  font-weight: 600;
-}
-.google-button:hover { border-color: var(--foreground); }
-.auth-divider {
-  position: relative;
-  margin: 24px 0;
-  border-top: 1px solid var(--border);
-  text-align: center;
-}
-.auth-divider span {
-  position: relative;
-  top: -0.7em;
-  background: #fffdf8;
-  padding: 0 10px;
-  font-size: 0.66rem;
-  color: var(--muted-foreground);
-}
 .auth-form { display: grid; gap: 18px; }
 .auth-form label { display: grid; gap: 8px; }
 .auth-form label span { font: 600 0.67rem var(--font-geist-mono); letter-spacing: 0.08em; text-transform: uppercase; }
@@ -417,10 +390,17 @@ body {
 }
 .auth-form input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(166,61,44,.1); }
 .auth-submit { width: 100%; border: 0; cursor: pointer; }
+.auth-submit:disabled { cursor: not-allowed; opacity: .58; }
+.turnstile-container { min-height: 65px; overflow: hidden; }
 .auth-error { margin-top: 12px; color: var(--primary); font-size: 0.76rem; line-height: 1.5; }
 .auth-switch { margin-top: 20px; text-align: center; font-size: 0.76rem; color: var(--muted-foreground); }
 .auth-switch a { color: var(--foreground); text-decoration: underline; text-underline-offset: 3px; }
 .auth-disclosure { font-size: 0.64rem; color: var(--muted-foreground); }
+.signin-dialog { width: min(470px, calc(100vw - 32px)); max-width: 470px; background: var(--card); color: var(--foreground); padding: 26px; box-shadow: 0 28px 90px rgba(28, 28, 26, 0.2); }
+.signin-dialog-header { padding-right: 32px; }
+.signin-dialog-header [data-slot='dialog-title'] { margin-top: 10px; font-size: 2.25rem; line-height: 1; letter-spacing: -.055em; }
+.signin-dialog-header [data-slot='dialog-description'] { margin-top: 4px; line-height: 1.6; }
+.signin-dialog .auth-panel { margin-top: 8px; border: 0; background: transparent; padding: 0; box-shadow: none; }
 .standalone-page { min-height: 100vh; padding: 30px clamp(24px, 6vw, 84px) 70px; }
 .standalone-page nav { display: flex; align-items: center; justify-content: space-between; }
 .standalone-heading { max-width: 860px; margin: 110px auto 0; text-align: center; }

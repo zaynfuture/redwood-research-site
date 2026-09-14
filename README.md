@@ -29,9 +29,9 @@ labels are examples rather than live research output or investment recommendatio
 
 ## Contact
 
-The private-beta call to action opens the visitor's email application with a prepared message addressed
-to `request@cortexhubs.com`. The website does not collect contact-form data or send mail on a visitor's
-behalf.
+The header and footer private-beta calls to action open `https://www.linkedin.com/company/redwoodresearch-cortexhubs/?viewAsMember=true`
+in the current tab, in all three supported languages. Visitors can use LinkedIn's messaging or
+connection options to contact Zayn Zheng. The website does not send a message on their behalf.
 
 ## Streamlit Cloud deployment
 
@@ -135,9 +135,10 @@ Do not commit the generated SQL or password. Sessions expire after 24 hours. `/o
 consume quota; every admitted `/openapi/query` call consumes one request even if the private service
 later fails.
 
-After three login attempts from the same IP in a 15-minute window, `/openapi/auth/login` requires a
-single-use Cloudflare Turnstile token with action `login`. Configure `TURNSTILE_SITE_KEY`,
-`TURNSTILE_SECRET_KEY`, and `TURNSTILE_EXPECTED_HOSTNAME` as hosted runtime values. The server validates
-the token, source IP, action, and hostname before checking credentials.
+The website's email/password sign-in form always requires a visible, single-use Cloudflare Turnstile
+token with action `login`. `/openapi/auth/login` requires the same challenge after three attempts from
+one IP in a 15-minute window. Configure `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, and
+`TURNSTILE_EXPECTED_HOSTNAME` as hosted runtime values. The server validates the token, source IP,
+action, and hostname before checking credentials.
 
 © 2026 Cortex Hubs

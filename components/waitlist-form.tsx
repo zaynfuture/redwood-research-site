@@ -7,19 +7,19 @@ type WaitlistFormProps = {
 };
 
 const templates = {
-  en: { label: 'Join private beta', subject: 'Redwood private beta request', body: ['Hello Redwood team,','','I would like to request access to the Redwood private beta.','','Name:','Company (optional):','','What I am looking for:','','Best,'] },
-  'zh-CN': { label: '申请私有测试', subject: '申请 Redwood 私有测试', body: ['Redwood 团队您好：','','我希望申请加入 Redwood 私有测试。','','姓名：','公司（可选）：','','我的研究需求：','','谢谢！'] },
-  'zh-TW': { label: '申請私有測試', subject: '申請 Redwood 私有測試', body: ['Redwood 團隊您好：','','我希望申請加入 Redwood 私有測試。','','姓名：','公司（可選）：','','我的研究需求：','','謝謝！'] },
+  en: { label: 'Join private beta', description: 'Join private beta — contact Zayn Zheng on LinkedIn' },
+  'zh-CN': { label: '申请私有测试', description: '申请私有测试 — 在 LinkedIn 上联系 Zayn Zheng' },
+  'zh-TW': { label: '申請私有測試', description: '申請私有測試 — 在 LinkedIn 上聯絡 Zayn Zheng' },
 } as const;
 
 export function WaitlistForm({ inverted = false, locale = 'en' }: WaitlistFormProps) {
   const template = templates[locale];
-  const emailHref = `mailto:request@cortexhubs.com?subject=${encodeURIComponent(template.subject)}&body=${encodeURIComponent(template.body.join('\n'))}`;
   return (
     <a
       className={inverted ? 'button beta-trigger beta-trigger-inverted' : 'button button-outline'}
-      href={emailHref}
-      aria-label={template.label}
+      href="https://www.linkedin.com/company/redwoodresearch-cortexhubs/?viewAsMember=true"
+      aria-label={template.description}
+      title={template.description}
     >
       {template.label} <ArrowRight size={16} />
     </a>

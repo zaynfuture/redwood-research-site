@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
   ArrowRight,
@@ -23,6 +23,12 @@ import { SignInDialog } from '@/components/sign-in-dialog';
 
 import { LanguageSelect, useLocale } from '@/components/locale-provider';
 import type { Locale } from '@/lib/locale';
+
+const reportControls = {
+  en: { close: 'Close preview', previous: 'Previous report', next: 'Next report', original: 'Open full-size image' },
+  'zh-CN': { close: '关闭预览', previous: '上一份报告', next: '下一份报告', original: '查看原图' },
+  'zh-TW': { close: '關閉預覽', previous: '上一份報告', next: '下一份報告', original: '查看原圖' },
+};
 
 const sentimentLabel = { en: 'Market sentiment', 'zh-CN': '市场情绪', 'zh-TW': '市場情緒' };
 
@@ -74,7 +80,7 @@ const reportImages = [
 
 const content = {
   en: {
-    profile: 'Volume profile',
+    profile: 'Market Structure · Volume Profile',
     nav: ['Framework', 'Capabilities', 'Cases', 'Principles'],
     account: 'Sign in',
     eyebrow: 'Built for evidence-led investing',
@@ -282,7 +288,7 @@ const content = {
     footer: 'Research infrastructure for thoughtful investors.',
   },
   'zh-CN': {
-    profile: '筹码峰分布',
+    profile: '市场结构 · 筹码峰分布',
     nav: ['研究框架', '平台能力', '案例', '产品原则'],
     account: '登录',
     eyebrow: '为证据驱动的投资研究而构建',
@@ -446,7 +452,7 @@ const content = {
     footer: '为审慎投资者打造的研究基础设施。',
   },
   'zh-TW': {
-    profile: '籌碼峰分布',
+    profile: '市場結構 · 籌碼峰分布',
     nav: ['研究框架', '平台能力', '案例', '產品原則'],
     account: '登入',
     eyebrow: '為證據驅動的投資研究而建',
@@ -618,6 +624,15 @@ const content = {
 export default function Home() {
   const { locale } = useLocale();
   const copy = content[locale];
+  const controls = reportControls[locale];
+  const [reportIndex, setReportIndex] = useState(0);
+  const reportDialog = useRef<HTMLDialogElement>(null);
+  const activeReport = reportImages[reportIndex];
+
+  function stepReport(direction: number) {
+    setReportIndex(index => (index + direction + reportImages.length) % reportImages.length);
+  }
+
   useEffect(() => {
     document.title = localeMetadata[locale].title;
     document
@@ -626,8 +641,8 @@ export default function Home() {
   }, [locale]);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-background text-foreground">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-6 lg:px-10">
+    <main className="home-page min-h-screen overflow-hidden bg-background text-foreground">
+      <nav className="home-nav mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-5 lg:px-10">
         <a
           href="#top"
           className="flex items-center gap-3"
@@ -660,36 +675,34 @@ export default function Home() {
 
       <section
         id="top"
-        className="mx-auto grid max-w-7xl items-center gap-16 px-6 pb-24 pt-16 lg:grid-cols-[0.92fr_1.08fr] lg:px-10 lg:pb-32 lg:pt-24"
+        className="home-hero mx-auto grid max-w-7xl items-center px-6 lg:px-10"
       >
         <div>
           <div className="eyebrow">
-            <span className="live-dot" /> {copy.eyebrow}
+            {copy.eyebrow}
           </div>
-          <h1 className="mt-7 font-heading text-[clamp(3.8rem,8vw,7.5rem)] font-medium leading-[0.82] tracking-[-0.075em]">
+          <h1 className="home-title mt-6 font-heading">
             {copy.heroLead}
             <br />
-            <span className="serif-italic text-primary">
+            <span className="heading-accent text-primary">
               {copy.heroAccent}
             </span>{' '}
             {copy.heroTail}
           </h1>
-          <p className="mt-9 max-w-xl text-lg leading-8 text-muted-foreground">
+          <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground">
             {copy.heroCopy}
           </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <a href="#framework" className="button button-primary">
-              {copy.explore} <ArrowRight size={17} />
+          <div className="mt-7 flex flex-wrap gap-2">
+            <a href={`/volume-profile?lang=${locale}`} className="button button-primary">
+              <BarChart3 size={18} aria-hidden="true" /> {copy.profile}
             </a>
-            <a href="#capabilities" className="button button-ghost">
-              {copy.view}
-            </a>
-            <a href="/market-sentiment" className="button button-ghost">
+            <a href="/market-sentiment" className="button button-outline">
               {sentimentLabel[locale]}
             </a>
-            <a href={`/volume-profile?lang=${locale}`} className="button button-ghost">
-              <BarChart3 size={17} aria-hidden="true" /> {copy.profile}
-            </a>
+          </div>
+          <div className="home-research-links mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+            <a href="#framework">{copy.explore}</a>
+            <a href="#capabilities">{copy.view}</a>
           </div>
           <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-border pt-6 text-xs text-muted-foreground">
             <span className="flex items-center gap-2">
@@ -806,7 +819,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y border-border bg-[#f1eee8]">
+      <section className="border-y border-border bg-muted">
         <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-border px-6 md:grid-cols-4 lg:px-10">
           {copy.highlights.map((item) => (
             <div key={item[1]} className="stat">
@@ -820,7 +833,7 @@ export default function Home() {
 
       <section
         id="framework"
-        className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36"
+        className="mx-auto max-w-7xl section-space px-6 lg:px-10"
       >
         <div className="section-grid">
           <div className="sticky-copy">
@@ -828,7 +841,7 @@ export default function Home() {
             <h2 className="section-title">
               {copy.systemTitle}
               <br />
-              <span className="serif-italic text-primary">
+              <span className="heading-accent text-primary">
                 {copy.systemAccent}
               </span>
             </h2>
@@ -860,13 +873,13 @@ export default function Home() {
       </section>
 
       <section id="capabilities" className="dark-section">
-        <div className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36">
+        <div className="mx-auto max-w-7xl section-space px-6 lg:px-10">
           <div className="mb-16 grid gap-8 lg:grid-cols-2">
             <div>
               <span className="section-index text-white/35">
                 {copy.capabilitiesIndex}
               </span>
-              <h2 className="mt-6 max-w-2xl text-4xl font-medium tracking-[-.045em] text-white sm:text-6xl">
+              <h2 className="mt-6 max-w-2xl display-title font-semibold text-white">
                 {copy.capabilitiesTitle}
               </h2>
             </div>
@@ -893,14 +906,14 @@ export default function Home() {
       </section>
 
       <section id="cases" className="case-section border-b border-border">
-        <div className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36">
+        <div className="mx-auto max-w-7xl section-space px-6 lg:px-10">
           <div className="case-heading">
             <div>
               <span className="section-index">{copy.casesIndex}</span>
               <h2 className="section-title">
                 {copy.casesTitle}
                 <br />
-                <span className="serif-italic text-primary">
+                <span className="heading-accent text-primary">
                   {copy.casesAccent}
                 </span>
               </h2>
@@ -908,17 +921,27 @@ export default function Home() {
             <p className="section-copy">{copy.casesCopy}</p>
           </div>
           <div className="report-gallery" aria-label="Redwood report examples">
-            {reportImages.map((report) => (
+            {reportImages.map((report, index) => (
               <figure className="report-gallery-item" key={report.src}>
-                <div className="report-gallery-frame">
+                <a
+                  className="report-gallery-frame"
+                  href={report.src}
+                  aria-haspopup="dialog"
+                  onClick={event => {
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || !reportDialog.current) return;
+                    event.preventDefault();
+                    setReportIndex(index);
+                    reportDialog.current.showModal();
+                  }}
+                >
                   <Image
                     src={report.src}
                     width={report.width}
                     height={report.height}
-                    sizes="(max-width: 900px) 100vw, 50vw"
+                    sizes="(max-width: 900px) calc(100vw - 48px), (max-width: 1280px) 48vw, 600px"
                     alt={report.title}
                   />
-                </div>
+                </a>
                 <figcaption>
                   <strong>{report.title}</strong>
                   <span>{report.description}</span>
@@ -926,6 +949,36 @@ export default function Home() {
               </figure>
             ))}
           </div>
+          <dialog
+            ref={reportDialog}
+            className="report-dialog"
+            aria-labelledby="report-preview-title"
+            onKeyDown={event => {
+              if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                event.preventDefault();
+                stepReport(event.key === 'ArrowLeft' ? -1 : 1);
+              }
+            }}
+          >
+            <div className="report-dialog-heading">
+              <h3 id="report-preview-title" aria-live="polite">{activeReport.title}</h3>
+              <button type="button" className="button button-outline" onClick={() => reportDialog.current?.close()}>
+                {controls.close}
+              </button>
+            </div>
+            <Image
+              src={activeReport.src}
+              width={activeReport.width}
+              height={activeReport.height}
+              sizes="(max-width: 1000px) 92vw, 960px"
+              alt={activeReport.title}
+            />
+            <div className="report-dialog-actions">
+              <button type="button" className="button button-outline" onClick={() => stepReport(-1)}>{controls.previous}</button>
+              <button type="button" className="button button-outline" onClick={() => stepReport(1)}>{controls.next}</button>
+              <a href={activeReport.src} target="_blank" rel="noopener" className="button button-primary">{controls.original}</a>
+            </div>
+          </dialog>
           <div className="case-grid">
             <article className="case-card">
               <div className="case-card-top">
@@ -1061,14 +1114,14 @@ export default function Home() {
 
       <section
         id="principles"
-        className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-36"
+        className="mx-auto max-w-7xl section-space px-6 lg:px-10"
       >
         <span className="section-index">{copy.principlesIndex}</span>
         <div className="mt-8 grid gap-14 lg:grid-cols-[1fr_1.15fr]">
           <h2 className="section-title">
             {copy.principlesTitle}
             <br />
-            <span className="serif-italic text-primary">
+            <span className="heading-accent text-primary">
               {copy.principlesAccent}
             </span>
           </h2>
@@ -1090,11 +1143,11 @@ export default function Home() {
         <div className="cta-orbit" aria-hidden="true" />
         <div className="relative z-10 mx-auto max-w-4xl px-6 py-28 text-center lg:py-36">
           <span className="section-index text-white/35">{copy.beta}</span>
-          <h2 className="mt-7 text-5xl font-medium leading-[.95] tracking-[-.06em] text-white sm:text-7xl">
+          <h2 className="mt-7 display-title text-white">
             {copy.ctaTitle}
             <br />
             {copy.ctaTail}{' '}
-            <span className="serif-italic text-[#dc8473]">
+            <span className="heading-accent text-[var(--night-accent)]">
               {copy.ctaAccent}
             </span>
           </h2>
@@ -1106,7 +1159,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <footer className="bg-[#171916] px-6 pb-10 pt-8 text-white/45 lg:px-10">
+      <footer className="bg-[var(--night)] px-6 pb-10 pt-8 text-white/45 lg:px-10">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 border-t border-white/10 pt-8 text-xs sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3 text-white">
             <span className="brand-mark">

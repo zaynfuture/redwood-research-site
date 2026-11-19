@@ -70,7 +70,7 @@ function PsychologyCurve({ regime, label, stage, aria }: { regime: Regime; label
     regime.cycle_stage === 'fear' ? 195 : regime.cycle_stage === 'denial' ? 174 :
     regime.cycle_stage === 'anxiety' ? 125 : regime.cycle_stage === 'complacency' ? 82 :
     regime.cycle_stage === 'optimism' ? 78 : regime.cycle_stage === 'hope' ? 134 : 170;
-  return <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#191a18] p-4 text-white sm:p-6">
+  return <div className="overflow-hidden rounded-2xl border border-white/10 bg-[var(--night)] p-4 text-white sm:p-6">
     <svg viewBox="0 0 680 240" className="h-auto w-full" role="img" aria-label={aria}>
       <defs><linearGradient id="sentiment-cycle-gradient" x1="0" x2="1"><stop stopColor="#69a99a"/><stop offset=".46" stopColor="#d2b76c"/><stop offset=".72" stopColor="#b95643"/><stop offset="1" stopColor="#69a99a"/></linearGradient></defs>
       <path d="M30 180 C95 175 95 135 160 135 C220 135 220 48 300 38 C348 32 355 80 405 96 C455 112 463 185 520 194 C565 202 595 165 650 150" fill="none" stroke="url(#sentiment-cycle-gradient)" strokeWidth="6" strokeLinecap="round"/>

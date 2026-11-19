@@ -104,13 +104,13 @@ export default function MarketSentiment() {
     ? `${times.format(new Date(value))} (ET)` : t.missing;
 
   return (
-    <main className="mx-auto max-w-6xl space-y-10 px-6 py-8">
+    <main className="research-tool mx-auto max-w-6xl space-y-8 px-6 pt-6">
       <nav className="flex flex-col items-start gap-4 text-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-5"><a href="/">{t.home}</a><a href={`/volume-profile?lang=${locale}`}>{t.profile}</a></div>
         <LanguageSelect />
       </nav>
-      <header className="flex flex-col items-start gap-4 border-b pb-5 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">{t.title}</h1>
+      <header className="research-tool-heading flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="display-title">{t.title}</h1>
         <button className="button button-outline" onClick={() => refresh(value => value + 1)}>{t.refresh}</button>
       </header>
       {!result && <p role={failed ? 'alert' : 'status'}>{failed ? t.failed : t.loading}</p>}

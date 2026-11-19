@@ -55,7 +55,7 @@ export default function EnterprisePage() {
       <header className="enterprise-hero">
         <div>
           <span className="section-index">ENTERPRISE / 深度定制</span>
-          <h1>让研究系统适应你的<br /><span className="serif-italic text-primary">组织与边界。</span></h1>
+          <h1>让研究系统适应你的<br /><span className="heading-accent text-primary">组织与边界。</span></h1>
         </div>
         <div className="enterprise-intro">
           <p>Redwood 企业版围绕现有股票系统、内部文档和协作渠道进行深度定制，而不是要求团队迁移到一套固定流程。</p>
@@ -78,7 +78,7 @@ export default function EnterprisePage() {
       <section className="enterprise-boundary">
         <div>
           <span className="section-index">SECURITY BOUNDARY</span>
-          <h2>定制不等于<br /><span className="serif-italic text-primary">放松边界。</span></h2>
+          <h2>定制不等于<br /><span className="heading-accent text-primary">放松边界。</span></h2>
         </div>
         <div className="boundary-grid">
           <div><LockKeyhole size={20} /><strong>身份与权限</strong><p>按用户、团队和数据源执行访问控制，敏感凭据不进入模型上下文。</p></div>
@@ -89,7 +89,7 @@ export default function EnterprisePage() {
       </section>
 
       <section className="enterprise-process">
-        <div><span className="section-index">ENGAGEMENT MODEL</span><h2>从需求到运行，<br /><span className="serif-italic text-primary">逐步验收。</span></h2></div>
+        <div><span className="section-index">ENGAGEMENT MODEL</span><h2>从需求到运行，<br /><span className="heading-accent text-primary">逐步验收。</span></h2></div>
         <div className="process-list">{phases.map(([index, title, description]) => <article key={index}><span>{index}</span><div><h3>{title}</h3><p>{description}</p></div></article>)}</div>
       </section>
 

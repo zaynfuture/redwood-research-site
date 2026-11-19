@@ -4,6 +4,7 @@ type RedwoodRequest = {
   requestId: string;
   timeoutMs: number;
   maxResponseBytes: number;
+  locale?: string;
 };
 
 async function requestRedwood(input: RedwoodRequest): Promise<unknown> {
@@ -21,6 +22,7 @@ async function requestRedwood(input: RedwoodRequest): Promise<unknown> {
       'content-type': 'application/json',
       'user-agent': 'Redwood-Research-Site/1.0',
       'x-request-id': input.requestId,
+      ...(input.locale && { 'accept-language': input.locale }),
     },
     body: JSON.stringify(input.body),
     redirect: 'manual',
@@ -52,5 +54,11 @@ export function runPrivateTool(input: string, requestId: string): Promise<unknow
 export function runPrivateVolumeProfile(symbol: string, requestId: string): Promise<unknown> {
   return requestRedwood({
     path: '/v1/volume-profile', body: { symbol }, requestId, timeoutMs: 125_000, maxResponseBytes: 8_000_000,
+  });
+}
+
+export function runPrivateMarketSentiment(locale: string, requestId: string): Promise<unknown> {
+  return requestRedwood({
+    path: '/v1/market-sentiment', body: { locale }, requestId, locale, timeoutMs: 45_000, maxResponseBytes: 64_000,
   });
 }

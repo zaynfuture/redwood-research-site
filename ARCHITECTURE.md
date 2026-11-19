@@ -17,6 +17,8 @@ Redwood Research Site is the presentation and delivery client for Redwood Resear
 - Technical analysis, fundamental analysis, valuation, evidence, rights, and freshness policy.
 - Financial calculations and classifications, including POC, value area, VWAP, reference-price volume
   splits, and position analysis.
+- Sentiment acquisition, psychology-cycle classification, confidence, scenario weights, and
+  improvement, deterioration, or invalidation conditions.
 - Completeness decisions, bounded public projections, and authoritative API contracts.
 
 The Site may validate that a response matches the documented schema and reconciles structurally. It

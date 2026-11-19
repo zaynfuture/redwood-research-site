@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import {
   ArrowRight,
   BarChart3,
@@ -22,7 +21,10 @@ import {
 import { WaitlistForm } from '@/components/waitlist-form';
 import { SignInDialog } from '@/components/sign-in-dialog';
 
-export type Locale = 'en' | 'zh-CN' | 'zh-TW';
+import { LanguageSelect, useLocale } from '@/components/locale-provider';
+import type { Locale } from '@/lib/locale';
+
+const sentimentLabel = { en: 'Market sentiment', 'zh-CN': '市场情绪', 'zh-TW': '市場情緒' };
 
 const localeMetadata: Record<Locale, { title: string; description: string }> = {
   en: {
@@ -614,16 +616,14 @@ const content = {
 } as const;
 
 export default function Home() {
-  const locale: Locale = 'en';
-  const copy = content.en;
+  const { locale } = useLocale();
+  const copy = content[locale];
   useEffect(() => {
-    document.documentElement.lang = 'en';
-    window.localStorage.removeItem('redwood-locale');
-    document.title = localeMetadata.en.title;
+    document.title = localeMetadata[locale].title;
     document
       .querySelector('meta[name="description"]')
-      ?.setAttribute('content', localeMetadata.en.description);
-  }, []);
+      ?.setAttribute('content', localeMetadata[locale].description);
+  }, [locale]);
 
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground">
@@ -652,6 +652,7 @@ export default function Home() {
           ))}
         </div>
         <div className="nav-actions">
+          <LanguageSelect />
           <SignInDialog label={copy.account} />
           <WaitlistForm source="header" locale={locale} />
         </div>
@@ -683,9 +684,12 @@ export default function Home() {
             <a href="#capabilities" className="button button-ghost">
               {copy.view}
             </a>
-            <Link href="/volume-profile" className="button button-ghost">
+            <a href="/market-sentiment" className="button button-ghost">
+              {sentimentLabel[locale]}
+            </a>
+            <a href={`/volume-profile?lang=${locale}`} className="button button-ghost">
               <BarChart3 size={17} aria-hidden="true" /> {copy.profile}
-            </Link>
+            </a>
           </div>
           <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-border pt-6 text-xs text-muted-foreground">
             <span className="flex items-center gap-2">

@@ -1,17 +1,23 @@
+'use client';
+
+import { LanguageSelect, useLocale } from '@/components/locale-provider';
+import { authCopy } from '@/lib/auth-copy';
 import { AuthForm } from '@/components/auth-form';
 import Link from 'next/link';
 
 export default function SignUpPage() {
+  const copy = authCopy[useLocale().locale];
   return (
     <main className="auth-page">
       <Link href="/" className="auth-brand"><span className="brand-mark"><span /></span><strong>REDWOOD</strong></Link>
+      <LanguageSelect />
       <section>
-        <span className="section-index">CREATE ACCOUNT</span>
-        <h1>Begin with <span className="serif-italic text-primary">evidence.</span></h1>
-        <p>Create an account to prepare for private-beta or enterprise access.</p>
+        <span className="section-index">{copy.register}</span>
+        <h1>{copy.begin}</h1>
+        <p>{copy.registerIntro}</p>
         <AuthForm mode="register" />
       </section>
-      <p className="auth-disclosure">By continuing, you acknowledge that research output is informational and not investment advice.</p>
+      <p className="auth-disclosure">{copy.registerDisclosure}</p>
     </main>
   );
 }

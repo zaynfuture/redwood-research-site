@@ -1,7 +1,8 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const en = document.documentElement.lang.startsWith('en');
+  const locale = document.documentElement.lang;
+  const en = locale === 'en';
   const tw = document.documentElement.lang === 'zh-TW';
   const tr = (zh, english, traditional) => en ? english : (tw && traditional ? traditional : zh);
   const labels = {
@@ -30,6 +31,17 @@
     hist:tr('历史成交','Historical trades','歷史成交'),sample:tr('模拟演示 · 非行情','Synthetic demo · not market data','模擬演示 · 非行情'),gap:tr('数据不完整','Incomplete data','資料不完整'),complete:tr('完整窗口','Complete window','完整時段'),
     hint:tr('指向左侧价格档或右侧价格曲线；聚焦后用方向键查看明细。','Inspect a profile row or the price path; use arrow keys after focusing the chart.','指向左側價格檔或右側價格曲線；聚焦後用方向鍵查看明細。'),
   };
+  const picker = $('profile-language');
+  if (picker) {
+    picker.value = locale;
+    picker.setAttribute('aria-label', tr('语言', 'Language', '語言'));
+    picker.addEventListener('change', () => {
+      document.cookie = 'redwood-locale=' + picker.value + '; Max-Age=31536000; Path=/; SameSite=Lax';
+      const url = new URL(window.location.href);
+      url.searchParams.set('lang', picker.value);
+      window.location.assign(url);
+    });
+  }
   document.title = labels.title + ' · Redwood Research';
   document.querySelectorAll('[data-t]').forEach(el => { el.textContent = labels[el.dataset.t] || ''; });
   $('search').placeholder = tr('输入 AAPL、NVDA 或公司名','Enter AAPL, NVDA, or a company','輸入 AAPL、NVDA 或公司名');
@@ -38,14 +50,14 @@
   $('methods').textContent = tr('价格档含下限、不含上限。POC 为成交股数最多的一档；70% 价值区从 POC 向相邻较高成交档扩展，成交量相同则取下方，直到覆盖至少 70%。价格路径和底部成交量由同一批已接受逐笔成交按 UTC 分钟精确聚合；横向柱的数字为该档占窗口总股数的真实比例。VWAP 按逐笔成交价与股数加权。分布只描述所选窗口内的历史交易，不能识别当前持有人或真实持仓成本。','Bins include the lower edge and exclude the upper. POC is the highest-volume bin. The 70% value area expands toward the larger adjacent bin, choosing the lower bin on a tie, until at least 70% is covered. The price path and lower volume band are exact UTC-minute aggregations of the same accepted prints; each horizontal label is that row’s true share of window volume. VWAP uses actual trade prices and shares. The profile describes historical transactions only; current holders and their cost basis are unobserved.','價格檔含下限、不含上限。POC 為成交股數最多的一檔；70% 價值區從 POC 向相鄰較高成交檔擴展，成交量相同則取下方，直到涵蓋至少 70%。價格路徑和底部成交量由同一批已接受逐筆成交按 UTC 分鐘精確聚合；橫向柱的數字為該檔佔時段總股數的真實比例。VWAP 按逐筆成交價與股數加權。分布只描述所選時段內的歷史交易，不能識別目前持有人或真實持倉成本。');
 
   const node = (tag, value, cls) => { const e = document.createElement(tag); if (value != null) e.textContent = value; if (cls) e.className = cls; return e; };
-  const fmt = (n, digits=2) => n == null ? '—' : n.toLocaleString(en ? 'en-US' : 'zh-CN',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+  const fmt = (n, digits=2) => n == null ? '—' : n.toLocaleString(locale,{minimumFractionDigits:digits,maximumFractionDigits:digits});
   const price = (n,step=.01) => fmt(n,Math.max(2,Math.min(8,(String(step).split('.')[1]||'').length,8),step>0&&step<.01?Math.ceil(-Math.log10(step)):2));
   const pct = n => fmt(n,1)+'%';
   const signed = n => n == null ? '—' : (n>0?'+':'')+fmt(n)+'%';
-  const compact = n => n==null?'—':new Intl.NumberFormat(en?'en-US':'zh-CN',{notation:'compact',maximumFractionDigits:2}).format(n);
+  const compact = n => n==null?'—':new Intl.NumberFormat(locale,{notation:'compact',maximumFractionDigits:2}).format(n);
   const classes = n => n>0?'positive':n<0?'negative':'';
   const clock = stamp => new Date(stamp.replace(/(\.\d{3})\d+/, '$1')).toLocaleTimeString('en-GB',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hour12:false});
-  const stamp = value => value ? new Date(value.replace(/(\.\d{3})\d+/, '$1')).toLocaleString(en?'en-US':'zh-CN',{timeZone:'America/New_York',hour12:false})+' ET' : '—';
+  const stamp = value => value ? new Date(value.replace(/(\.\d{3})\d+/, '$1')).toLocaleString(locale,{timeZone:'America/New_York',hour12:false})+' ET' : '—';
   const gapNames = {pagination_incomplete:tr('分页未取完','Pagination incomplete','分頁尚未取完'),conflicting_trade_identity:tr('成交编号冲突','Conflicting trade IDs','成交編號衝突'),invalid_trade_record:tr('成交记录无效','Invalid trade record','成交記錄無效'),acquisition_incomplete:tr('数据获取中断','Retrieval interrupted','資料取得中斷'),time_bar_budget_exceeded:tr('分钟曲线超出边界','Minute-path budget exceeded','分鐘曲線超出邊界'),no_eligible_trades:tr('窗口内无有效成交','No eligible trades','時段內無有效成交')};
   const standard = {'regular-session':tr('全天','Full session'), 'closing-half-hour':tr('尾盘 30 分钟','Final 30 min','尾盤 30 分鐘')};
   const nameOf = p => standard[p.window] || (clock(p.start)+'–'+clock(p.end)+' ET');

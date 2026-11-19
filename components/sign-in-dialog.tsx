@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from '@/components/locale-provider';
+import { authCopy } from '@/lib/auth-copy';
 import { AuthForm } from '@/components/auth-form';
 import {
   Dialog,
@@ -11,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 
 export function SignInDialog({ label }: { label: string }) {
+  const copy = authCopy[useLocale().locale];
   return (
     <Dialog>
       <DialogTrigger
@@ -26,12 +29,12 @@ export function SignInDialog({ label }: { label: string }) {
       </DialogTrigger>
       <DialogContent className="signin-dialog">
         <DialogHeader className="signin-dialog-header">
-          <span className="section-index">MEMBER ACCESS</span>
+          <span className="section-index">{copy.member}</span>
           <DialogTitle>
-            Welcome <span className="serif-italic text-primary">back.</span>
+            {copy.welcome}
           </DialogTitle>
           <DialogDescription>
-            Sign in to your private research workspace and chatbot.
+            {copy.loginIntro}
           </DialogDescription>
         </DialogHeader>
         <AuthForm mode="login" />

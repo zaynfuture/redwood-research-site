@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useLocale } from '@/components/locale-provider';
+import { authCopy } from '@/lib/auth-copy';
 import { SyntheticEvent, useEffect, useRef, useState } from 'react';
 import { ArrowRight, LoaderCircle } from 'lucide-react';
 
@@ -32,7 +34,10 @@ type TurnstileConfig = {
 };
 
 export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
-  const [error, setError] = useState('');
+  const { locale } = useLocale();
+  const copy = authCopy[locale];
+  const [error, setError] = useState<'verificationUnavailable' | 'verificationFailed' | 'verificationRequired' | 'failure' | 'connection' | ''>('');
+  const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
   const [turnstileConfig, setTurnstileConfig] =
     useState<TurnstileConfig | null>(null);
@@ -60,7 +65,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
       .catch((caught: unknown) => {
         if (caught instanceof DOMException && caught.name === 'AbortError')
           return;
-        setError('Human verification is temporarily unavailable.');
+        setError('verificationUnavailable');
       });
     return () => controller.abort();
   }, [isRegister]);
@@ -85,7 +90,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
           },
           'error-callback': () => {
             setTurnstileToken('');
-            setError('Human verification failed. Please try again.');
+            setError('verificationFailed');
           },
           'expired-callback': () => setTurnstileToken(''),
           'timeout-callback': () => setTurnstileToken(''),
@@ -108,7 +113,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
     if (window.turnstile) renderWidget();
     else script.addEventListener('load', renderWidget);
     const handleScriptError = () =>
-      setError('Human verification is temporarily unavailable.');
+      setError('verificationUnavailable');
     script.addEventListener('error', handleScriptError);
 
     return () => {
@@ -131,11 +136,12 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isRegister && !turnstileToken) {
-      setError('Complete human verification before signing in.');
+      setError('verificationRequired');
       return;
     }
     setLoading(true);
     setError('');
+    setServerError('');
     const form = new FormData(event.currentTarget);
     try {
       const response = await fetch(`/api/auth/${mode}`, {
@@ -149,15 +155,14 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
       });
       const data = (await response.json()) as { error?: { message?: string } };
       if (!response.ok) {
-        setError(data.error?.message ?? 'Unable to continue.');
+        setServerError(data.error?.message ?? '');
+        setError('failure');
         if (!isRegister) resetTurnstile();
         return;
       }
       window.location.assign('/dashboard');
     } catch {
-      setError(
-        'Unable to continue. Please check your connection and try again.',
-      );
+      setError('connection');
       if (!isRegister) resetTurnstile();
     } finally {
       setLoading(false);
@@ -168,7 +173,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
     <div className="auth-panel">
       <form onSubmit={submit} className="auth-form">
         <label>
-          <span>Email</span>
+          <span>{copy.email}</span>
           <input
             name="email"
             type="email"
@@ -178,7 +183,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
           />
         </label>
         <label>
-          <span>Password</span>
+          <span>{copy.password}</span>
           <input
             name="password"
             type="password"
@@ -186,19 +191,19 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             maxLength={128}
             autoComplete={isRegister ? 'new-password' : 'current-password'}
             required
-            placeholder="At least 12 characters"
+            placeholder={copy.length}
           />
         </label>
         {!isRegister && (
           <div
             ref={turnstileContainer}
             className="turnstile-container"
-            aria-label="Human verification"
+            aria-label={copy.verification}
           />
         )}
         {error && (
           <p className="auth-error" role="alert">
-            {error}
+            {error === 'failure' && locale === 'en' && serverError ? serverError : copy[error]}
           </p>
         )}
         <button
@@ -209,7 +214,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             <LoaderCircle className="animate-spin" size={17} />
           ) : (
             <>
-              {isRegister ? 'Create account' : 'Sign in'}{' '}
+              {isRegister ? copy.register : copy.signIn}{' '}
               <ArrowRight size={17} />
             </>
           )}
@@ -217,15 +222,13 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
       </form>
       {isRegister ? (
         <p className="auth-switch">
-          Already have an account? <Link href="/signin">Sign in</Link>
+          {copy.haveAccount} <Link href="/signin">{copy.signIn}</Link>
         </p>
       ) : (
         <p className="auth-switch">
-          Contact Redwood Research via{' '}
           <a href="https://www.linkedin.com/company/redwoodresearch-cortexhubs/?viewAsMember=true">
-            Join private beta
-          </a>{' '}
-          to request a username and password.
+            {copy.beta}
+          </a>
         </p>
       )}
     </div>

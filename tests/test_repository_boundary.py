@@ -35,6 +35,18 @@ class RepositoryBoundaryTests(unittest.TestCase):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, transport)
 
+    def test_sentiment_page_renders_backend_stage_and_scenarios(self):
+        page = (ROOT / 'app/market-sentiment/page.tsx').read_text()
+        dashboard = (ROOT / 'components/sentiment-dashboard.tsx').read_text()
+        self.assertIn('<SentimentDashboard data={result}', page)
+        for required in ('data.regime.cycle_stage', 'data.regime.confidence',
+                         'data.outlook.scenarios', 'weights_are_probabilities'):
+            with self.subTest(required=required):
+                self.assertIn(required, dashboard)
+        for forbidden in ('trend_down =', 'weekly_change / 25', 'cycleStage =', 'confidence ='):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, page + dashboard)
+
 
 if __name__ == '__main__':
     unittest.main()

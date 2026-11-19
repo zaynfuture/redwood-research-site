@@ -1,17 +1,23 @@
+'use client';
+
+import { LanguageSelect, useLocale } from '@/components/locale-provider';
+import { authCopy } from '@/lib/auth-copy';
 import { AuthForm } from '@/components/auth-form';
 import Link from 'next/link';
 
 export default function SignInPage() {
+  const copy = authCopy[useLocale().locale];
   return (
     <main className="auth-page">
       <Link href="/" className="auth-brand"><span className="brand-mark"><span /></span><strong>REDWOOD</strong></Link>
+      <LanguageSelect />
       <section>
-        <span className="section-index">MEMBER ACCESS</span>
-        <h1>Welcome <span className="serif-italic text-primary">back.</span></h1>
-        <p>Sign in to your private research workspace and chatbot.</p>
+        <span className="section-index">{copy.member}</span>
+        <h1>{copy.welcome}</h1>
+        <p>{copy.loginIntro}</p>
         <AuthForm mode="login" />
       </section>
-      <p className="auth-disclosure">Research support only. Redwood does not execute orders.</p>
+      <p className="auth-disclosure">{copy.disclosure}</p>
     </main>
   );
 }

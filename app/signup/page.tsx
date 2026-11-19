@@ -8,7 +8,7 @@ export default function SignUpPage() {
       <section>
         <span className="section-index">CREATE ACCOUNT</span>
         <h1>Begin with <span className="serif-italic text-primary">evidence.</span></h1>
-        <p>Create an account, then activate the US$99 monthly individual plan.</p>
+        <p>Create an account to prepare for private-beta or enterprise access.</p>
         <AuthForm mode="register" />
       </section>
       <p className="auth-disclosure">By continuing, you acknowledge that research output is informational and not investment advice.</p>

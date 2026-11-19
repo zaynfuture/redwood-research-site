@@ -8,9 +8,12 @@ from typing import Any
 import streamlit as st
 
 from redwood_streamlit.api import ResearchApiClient, ResearchApiError
+from redwood_streamlit.access import AccessError, CustomerAccess, resolve_access
+from redwood_streamlit.research_state import begin_operation, current_operation, synchronize
 from redwood_streamlit.i18n import SUPPORTED_LANGUAGES, translate
 from redwood_streamlit.settings import boolean_setting, setting
 from redwood_streamlit.style import apply_style, footer
+from redwood_streamlit.volume_profile import build_volume_profile_html
 
 
 ICON_PATH = Path(__file__).resolve().parent / "assets" / "rr-icon.jpeg"
@@ -44,11 +47,65 @@ def masthead() -> None:
     )
 
 
-def api_client() -> ResearchApiClient:
+def customer_access() -> CustomerAccess:
+    """Resolve only native OIDC claims and server-owned settings on each rerun."""
+    try:
+        user = st.user.to_dict()
+    except (AttributeError, TypeError):
+        user = {}
+    return resolve_access(
+        user, auth_enabled=boolean_setting("AUTH_ENABLED", True),
+        mode=str(setting("REDWOOD_ACCESS_MODE", "legacy")),
+        bindings=setting("REDWOOD_CUSTOMER_BINDINGS", ""),
+        base_url=str(setting("REDWOOD_API_BASE_URL", "")),
+        credential_lookup=lambda name: setting(name, ""),
+        legacy_token=str(setting("REDWOOD_API_SERVICE_TOKEN", "")),
+        authorized_emails=str(setting("REDWOOD_AUTHORIZED_EMAILS", "")),
+        allow_all=boolean_setting("ALLOW_ALL_AUTHENTICATED_USERS", False),
+    )
+
+
+def synchronize_access() -> CustomerAccess | None:
+    try:
+        access = customer_access()
+    except AccessError:
+        access = None
+    synchronize(st.session_state, access.scope if access else None)
+    return access
+
+
+def operation_is_current(operation) -> bool:
+    access = synchronize_access()
+    return current_operation(st.session_state, operation, access.scope if access else None)
+
+
+def api_client(access: CustomerAccess) -> ResearchApiClient:
     return ResearchApiClient(
         base_url=str(setting("REDWOOD_API_BASE_URL", "")),
-        service_token=str(setting("REDWOOD_API_SERVICE_TOKEN", "")),
+        service_token=access.credential, expected_tenant_id=access.tenant_id,
     )
+
+
+def render_api_error(error: ResearchApiError) -> None:
+    key = {"quota": "research.quota_exhausted", "unauthorized": "research.access_changed",
+           "tenant_mismatch": "research.access_changed", "configuration": "research.api_missing",
+           "uncertain": "research.uncertain", "invalid_response": "research.invalid_response"}.get(
+               error.code, "research.service_unavailable")
+    st.error(t(key))
+    if error.uncertain and error.code != "uncertain":
+        st.caption(t("research.uncertain"))
+    if error.retry_after is not None:
+        st.caption(t("research.retry_after", seconds=error.retry_after))
+    if error.request_id:
+        st.caption(t("research.request_reference", reference=error.request_id))
+
+
+def render_allowance(account: dict) -> None:
+    st.caption(t("research.allowance_caption"))
+    for column, name in zip(st.columns(2), ("minute", "day"), strict=True):
+        window = account[name]
+        column.metric(t(f"research.allowance_{name}"), f"{window['used']} / {window['limit']}")
+        column.caption(t("research.allowance_reset", reset=window['resets_at']))
 
 
 @st.cache_data(ttl=30, show_spinner=False)
@@ -85,22 +142,6 @@ def authenticated() -> bool:
     return bool(getattr(st.user, "is_logged_in", False))
 
 
-def has_research_access() -> bool:
-    if not authenticated():
-        return False
-    if not boolean_setting("AUTH_ENABLED", True):
-        return True
-    if boolean_setting("ALLOW_ALL_AUTHENTICATED_USERS", False):
-        return True
-    email = str(getattr(st.user, "email", "")).strip().lower()
-    authorized = {
-        item.strip().lower()
-        for item in str(setting("REDWOOD_AUTHORIZED_EMAILS", "")).split(",")
-        if item.strip()
-    }
-    return bool(email and email in authorized)
-
-
 def auth_controls() -> None:
     if not boolean_setting("AUTH_ENABLED", True):
         st.sidebar.caption(t("auth.disabled"))
@@ -109,6 +150,7 @@ def auth_controls() -> None:
         email = getattr(st.user, "email", None) or "Authorized user"
         st.sidebar.caption(t("auth.signed_in", email=email))
         if st.sidebar.button(t("auth.sign_out"), use_container_width=True):
+            synchronize(st.session_state, None)
             st.logout()
     elif st.sidebar.button(t("auth.continue_google"), type="primary", use_container_width=True):
         try:
@@ -154,15 +196,11 @@ def page_membership() -> None:
     masthead()
     st.markdown(f'<div class="rw-kicker">{t("membership.kicker")}</div>', unsafe_allow_html=True)
     st.title(t("membership.title"))
-    individual, enterprise = st.columns(2, gap="large")
-    with individual:
+    private_beta, enterprise = st.columns(2, gap="large")
+    with private_beta:
         st.subheader(t("membership.individual"))
         st.markdown("\n".join(f"- {t(f'membership.item{i}')}" for i in range(1, 5)))
-        payment_link = str(setting("STRIPE_PAYMENT_LINK", ""))
-        if payment_link.startswith("https://"):
-            st.link_button(t("membership.activate"), payment_link, type="primary", use_container_width=True)
-        else:
-            st.info(t("membership.payment_pending"))
+        st.info(t("membership.payment_pending"))
     with enterprise:
         st.subheader(t("membership.enterprise"))
         st.markdown("\n".join(f"- {t(f'membership.enterprise{i}')}" for i in range(1, 5)))
@@ -185,16 +223,25 @@ def page_research() -> None:
         footer(t("footer"))
         return
 
-    if not has_research_access():
-        st.warning(t("research.no_access"))
-        payment_link = str(setting("STRIPE_PAYMENT_LINK", ""))
-        if payment_link.startswith("https://"):
-            st.link_button(t("membership.activate"), payment_link, type="primary")
+    try:
+        access = customer_access()
+    except AccessError as error:
+        synchronize(st.session_state, None)
+        if error.code == "configuration":
+            st.error(t("research.api_missing"))
+        elif error.code == "expired":
+            st.warning(t("research.session_expired"))
+        else:
+            st.warning(t("research.no_access"))
+        if error.code in {"configuration", "expired"}:
+            footer(t("footer"))
+            return
         st.caption(t("research.after_payment"))
         footer(t("footer"))
         return
 
-    client = api_client()
+    synchronize(st.session_state, access.scope)
+    client = api_client(access)
     if not client.configured:
         st.error(t("research.api_missing"))
         footer(t("footer"))
@@ -209,21 +256,42 @@ def page_research() -> None:
         footer(t("footer"))
         return
 
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+    if access.mode == "tenant":
+        try:
+            account = client.account()
+        except ResearchApiError as error:
+            synchronize(st.session_state, None)
+            render_api_error(error)
+            footer(t("footer"))
+            return
+        current = synchronize_access()
+        if current is None or current.scope != access.scope:
+            st.warning(t("research.access_changed"))
+            return
+        render_allowance(account)
+        st.button(t("research.allowance_refresh"), key="refresh_allowance")
+
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
     question = st.chat_input(t("research.input"), max_chars=8_000)
     if question:
+        current = synchronize_access()
+        if current is None or current.scope != access.scope:
+            st.warning(t("research.access_changed"))
+            return
+        operation = begin_operation(st.session_state, access.scope)
         st.session_state.messages.append({"role": "user", "content": question})
         with st.chat_message("user"):
             st.markdown(question)
         with st.chat_message("assistant"):
             with st.spinner(t("research.reviewing")):
                 try:
-                    result = client.query(question)
+                    result = client.query(question, authorize=lambda: operation_is_current(operation))
+                    if not operation_is_current(operation):
+                        st.warning(t("research.access_changed"))
+                        return
                     answer = str(result.get("answer", t("research.no_answer")))
                     st.markdown(answer)
                     evidence = result.get("evidence", [])
@@ -242,10 +310,16 @@ def page_research() -> None:
                             tokens=result.get("estimated_tokens", 0),
                         )
                     )
-                except ResearchApiError as exc:
-                    answer = t("research.offline_help") if "temporar" in str(exc).lower() else str(exc)
-                    st.error(answer)
-        st.session_state.messages.append({"role": "assistant", "content": answer})
+                except ResearchApiError as error:
+                    if not operation_is_current(operation):
+                        st.warning(t("research.access_changed"))
+                        return
+                    if error.code in {"unauthorized", "tenant_mismatch"}:
+                        synchronize(st.session_state, None)
+                    render_api_error(error)
+                    answer = t("research.uncertain") if error.uncertain else t("research.request_failed")
+        if operation_is_current(operation):
+            st.session_state.messages.append({"role": "assistant", "content": answer})
     st.caption(t("research.verify"))
     footer(t("footer"))
 
@@ -280,6 +354,17 @@ def page_enterprise() -> None:
     footer(t("footer"))
 
 
+def page_volume_profile() -> None:
+    masthead()
+    viewer = build_volume_profile_html(language=current_language())
+    if hasattr(st, "iframe"):
+        st.iframe(viewer, height="content")
+    else:
+        # Older supported Streamlit versions predate content-height iframes.
+        import streamlit.components.v1 as components
+        components.html(viewer, height=1040, scrolling=True)
+
+
 def page_api() -> None:
     masthead()
     st.markdown(f'<div class="rw-kicker">{t("api.kicker")}</div>', unsafe_allow_html=True)
@@ -294,6 +379,7 @@ def page_api() -> None:
     footer(t("footer"))
 
 
+synchronize_access()
 connection_controls()
 st.sidebar.divider()
 auth_controls()
@@ -302,6 +388,7 @@ navigation = st.navigation(
         st.Page(page_home, title=t("nav.home"), icon="🌲", url_path="home", default=True),
         st.Page(page_membership, title=t("nav.membership"), icon="💳", url_path="membership"),
         st.Page(page_research, title=t("nav.research"), icon="💬", url_path="research"),
+        st.Page(page_volume_profile, title=t("nav.volume_profile"), icon="📊", url_path="volume-profile"),
         st.Page(page_enterprise, title=t("nav.enterprise"), icon="🏢", url_path="enterprise"),
         st.Page(page_api, title="API", icon="🧩", url_path="api"),
     ]

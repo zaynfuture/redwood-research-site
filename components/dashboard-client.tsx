@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { SyntheticEvent, useEffect, useState } from 'react';
-import { BarChart3, Bot, Building2, CreditCard, LoaderCircle, LogOut, Send, Sparkles } from 'lucide-react';
+import { BarChart3, Bot, Building2, LoaderCircle, LogOut, Send, Sparkles } from 'lucide-react';
 
 interface Account {
   user: { email: string; displayName: string | null; plan: string; subscriptionStatus: string };
@@ -53,14 +53,6 @@ export function DashboardClient() {
     }).catch(() => { setError('Unable to load your account.'); setLoading(false); });
   }, []);
 
-  async function checkout() {
-    setBusy(true); setError('');
-    const response = await fetch('/api/billing/checkout', { method: 'POST' });
-    const data = await response.json() as { url?: string; error?: { message?: string } };
-    if (data.url) window.location.assign(data.url);
-    else { setError(data.error?.message ?? 'Billing is unavailable.'); setBusy(false); }
-  }
-
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.assign('/');
@@ -97,9 +89,9 @@ export function DashboardClient() {
       </header>
       <div className="dashboard-grid">
         <aside className="account-rail">
-          <span className="section-index">MEMBERSHIP</span>
-          <h1>{account.user.plan === 'individual' ? 'Individual' : account.user.plan === 'enterprise' ? 'Enterprise' : account.user.plan === 'legacy' ? 'Legacy access' : 'Free account'}</h1>
-          <p className="status-line"><i className={account.can_chat ? 'active' : ''} />{account.can_chat ? 'Research access active' : 'Subscription required'}</p>
+          <span className="section-index">ACCESS</span>
+          <h1>{account.user.plan === 'individual' ? 'Private beta' : account.user.plan === 'enterprise' ? 'Enterprise' : account.user.plan === 'legacy' ? 'Legacy access' : 'Access pending'}</h1>
+          <p className="status-line"><i className={account.can_chat ? 'active' : ''} />{account.can_chat ? 'Research access active' : 'Invitation required'}</p>
           <div className="quota-card">
             <div><span>Monthly chatbot use</span><strong>{account.quota.remaining.toLocaleString()}</strong></div>
             <small>calls remaining of {account.quota.limit.toLocaleString()} · {account.usage_month}</small>
@@ -109,7 +101,7 @@ export function DashboardClient() {
             <span><Sparkles size={15} /> Included every month</span>
             <p>Selected stock analysis</p><p>Market outlook</p><p>1,000 chatbot calls</p>
           </div>
-          {!account.can_chat && <button onClick={checkout} disabled={busy} className="button button-primary subscribe-button"><CreditCard size={16} />Activate US$99/month</button>}
+          {!account.can_chat && <Link href="/pricing" className="button button-primary subscribe-button">Request access</Link>}
           {error && <p className="auth-error" role="alert">{error}</p>}
         </aside>
         <section className="chat-workspace">
@@ -142,7 +134,7 @@ export function DashboardClient() {
             {busy && account.can_chat && <div className="chat-thinking"><LoaderCircle className="animate-spin" size={16} /> Reviewing evidence…</div>}
           </div>
           <form className="chat-form" onSubmit={ask}>
-            <textarea name="input" rows={3} maxLength={8000} disabled={!account.can_chat || busy} placeholder={account.can_chat ? 'Ask a research question…' : 'Activate a plan to use the chatbot'} />
+            <textarea name="input" rows={3} maxLength={8000} disabled={!account.can_chat || busy} placeholder={account.can_chat ? 'Ask a research question…' : 'Private-beta access is required'} />
             <button disabled={!account.can_chat || busy} aria-label="Send"><Send size={18} /></button>
           </form>
           <p className="chat-disclosure">Informational research support only — not personalized investment advice or a guarantee of future performance.</p>

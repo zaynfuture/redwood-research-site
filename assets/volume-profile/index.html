@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light"><title>Volume Profile · Redwood Research</title>
+<!-- PROFILE_STYLE -->
+</head>
+<body>
+<header class="mast"><div class="mast-inner">
+<a class="brand" href="/" aria-label="Redwood Research"><span class="brand-mark"><span></span></span><strong>REDWOOD</strong></a>
+<nav class="site-nav" aria-label="Primary"><a href="/#framework" data-t="navFramework"></a><a href="/#capabilities" data-t="navCapabilities"></a><a href="/" data-t="navHome"></a></nav>
+<div class="mast-right"><span class="local-status"><i></i><span data-t="local"></span></span><button type="button" id="refresh" class="import"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 11a8 8 0 1 0 1 5m0-5v-6m0 6h-6"/></svg><span data-t="refresh"></span></button></div>
+</div></header>
+<main>
+<section class="page-heading"><div><span class="section-index" data-t="productKicker"></span><h1><span data-t="titleLead"></span> <em data-t="titleAccent"></em></h1><p data-t="subtitle"></p></div>
+<div class="date-control"><label for="date" data-t="sessionDate"></label><select id="date"></select></div></section>
+<section class="guide" aria-label="Workflow"><article><span>01</span><div><strong data-t="guideSearchTitle"></strong><p data-t="guideSearch"></p></div></article><article><span>02</span><div><strong data-t="guideVerifyTitle"></strong><p data-t="guideVerify"></p></div></article><article><span>03</span><div><strong data-t="guideDecideTitle"></strong><p data-t="guideDecide"></p></div></article></section>
+<div class="notice" id="notice" role="status" hidden></div>
+<div class="layout">
+<aside class="rail"><div class="rail-head"><h2 data-t="symbols"></h2><span id="symbol-count" class="count"></span></div>
+<div class="search"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5"/></svg><input type="search" id="search" autocomplete="off" spellcheck="false"></div>
+<p class="directory-note" id="directory-note"></p><div class="symbol-list" id="symbols"></div>
+<div class="source-info"><span class="eyebrow" data-t="dataset"></span><strong id="source-name"></strong><span id="source-meta"></span><button type="button" id="restore" data-t="restore" hidden></button></div></aside>
+<section class="panel" aria-label="Volume profile"><div class="stock-head"><div><div class="stock-line"><h2 id="ticker">—</h2><span id="company"></span></div><div class="stock-sub"><span id="badge"></span><span id="timing"></span></div></div><div class="window-controls" id="windows"></div></div>
+<div id="profile-details"><div class="kpis" id="kpis"></div>
+<section class="plot-section"><div class="plot-tools"><div><h3 data-t="chartTitle"></h3><span id="bin-step" class="plot-meta"></span></div><div id="units" class="unit-control"></div></div>
+<div class="legend" id="legend"></div><div id="chart"></div><div class="plot-foot"><span id="inspect"></span><button type="button" id="open-table" data-t="table"></button></div></section></div>
+<div id="unavailable" class="unavailable" hidden><span class="section-index" data-t="directoryResult"></span><h3 id="unavailable-title" data-t="noProfileTitle"></h3><p id="unavailable-copy" data-t="noProfileCopy"></p><button type="button" id="fetch-empty" class="primary-action" data-t="fetchProfile"></button><small data-t="realtimeBoundary"></small></div>
+</section></div>
+<section id="insight" class="insight"><div class="insight-head"><h2 data-t="shape"></h2><span id="close-ref"></span></div><div id="insight-body"></div></section>
+<section id="audit" class="audit"><div class="audit-heading"><div><span class="section-index" data-t="auditKicker"></span><h2 data-t="auditTitle"></h2></div><span id="audit-verdict" class="audit-verdict"></span></div><div class="audit-grid"><article><span data-t="auditOrigin"></span><strong id="audit-source"></strong><small id="audit-rights"></small></article><article><span data-t="auditTime"></span><strong id="audit-asof"></strong><small id="audit-window"></small></article><article class="audit-checks"><span data-t="auditChecks"></span><ul id="audit-list"></ul></article></div><p class="audit-caveat" id="audit-caveat"></p></section>
+<section class="framework"><div class="framework-heading"><span class="section-index" data-t="frameworkKicker"></span><h2><span data-t="frameworkTitle"></span> <em data-t="frameworkAccent"></em></h2><p data-t="frameworkCopy"></p></div><div class="framework-grid">
+<article><span>01</span><strong data-t="modelValuation"></strong><p data-t="modelValuationCopy"></p></article><article><span>02</span><strong data-t="modelFactors"></strong><p data-t="modelFactorsCopy"></p></article><article><span>03</span><strong data-t="modelTrend"></strong><p data-t="modelTrendCopy"></p></article><article><span>04</span><strong data-t="modelRisk"></strong><p data-t="modelRiskCopy"></p></article><article class="featured"><span>05</span><strong data-t="modelProfile"></strong><p data-t="modelProfileCopy"></p></article><article><span>06</span><strong data-t="modelCatalyst"></strong><p data-t="modelCatalystCopy"></p></article></div>
+<div class="references"><span data-t="references"></span><a href="https://www.tradingview.com/support/solutions/43000502040-volume-profile-indicators-basic-concepts/" target="_blank" rel="noopener">Volume Profile</a><a href="https://www.aea.ru/data/pdf/fama2015.pdf" target="_blank" rel="noopener">Fama–French 5-factor</a><a href="https://www.sec.gov/files/company_tickers_exchange.json" target="_blank" rel="noopener">SEC ticker directory</a></div></section>
+<details class="data-notes"><summary data-t="notes"></summary><p id="methods"></p><p data-t="apiHelp"></p></details>
+</main>
+<dialog id="table-dialog"><div class="dialog-head"><h2 data-t="table"></h2><button type="button" id="dismiss">×</button></div><div id="table-wrap"></div></dialog>
+<!-- PROFILE_INITIAL -->
+<!-- SYMBOL_DIRECTORY -->
+<!-- PROFILE_SCRIPTS -->
+</body></html>

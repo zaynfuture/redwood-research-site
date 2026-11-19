@@ -29,6 +29,7 @@ export async function GET(request: Request): Promise<Response> {
   const claims = tokens.id_token ? await verifyGoogleIdToken(tokens.id_token, nonce) : null;
   if (!claims) return Response.redirect(`${url.origin}/signin?error=oauth`, 302);
   const user = await findOrCreateGoogleAccount({ email: claims.email.toLowerCase(), sub: claims.sub, displayName: claims.name ?? null });
+  if (!user) return Response.redirect(`${url.origin}/signin?error=oauth`, 302);
   const token = randomHex();
   await createAccountSession(user.id, token, new Date(Date.now() + ACCOUNT_SESSION_SECONDS * 1000).toISOString());
   const headers = new Headers({ location: `${url.origin}/dashboard` });

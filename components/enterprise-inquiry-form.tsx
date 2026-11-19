@@ -71,7 +71,7 @@ export function EnterpriseInquiryForm() {
         </div>
       </fieldset>
       <label className="inquiry-message"><span>需求说明 *</span><textarea name="message" minLength={10} maxLength={4000} rows={5} required placeholder="请简要说明现有系统、希望解决的问题、数据边界或验收目标。" /></label>
-      <label className="inquiry-consent"><input type="checkbox" name="consent" value="yes" required /><span>同意 Redwood 使用上述信息评估并联系我讨论企业方案。</span></label>
+      <label className="inquiry-consent"><input type="checkbox" name="consent" value="yes" required /><span>同意 Redwood Research 使用上述信息评估并联系我讨论企业方案。</span></label>
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button className="button button-primary inquiry-submit" disabled={loading}>{loading ? <LoaderCircle className="animate-spin" size={17} /> : <>提交咨询需求 <ArrowRight size={17} /></>}</button>
     </form>

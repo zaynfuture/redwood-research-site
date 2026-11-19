@@ -53,6 +53,7 @@ class VolumeProfilePageTests(unittest.TestCase):
                 '<body><!-- PROFILE_INITIAL --><!-- SYMBOL_DIRECTORY --><!-- PROFILE_SCRIPTS --></body></html>'
             )
             (assets / "style.css").write_text("body { margin: 0 }")
+            (assets / "site-header.css").write_text(".site-header { color: red }")
             for name in ("model", "chart", "app"):
                 (assets / f"{name}.js").write_text(f"/* {name} */")
             (assets / "demo.json").write_text('{"demo":true,"documents":[]}')

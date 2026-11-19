@@ -9,7 +9,7 @@ const locales = {
 };
 
 for (const [tag, [heading, signIn]] of Object.entries(locales)) {
-  test(`Worker honors the shared ${tag} locale and renders localized pages`, { skip: !origin }, async () => {
+  void test(`Worker honors the shared ${tag} locale and renders localized pages`, { skip: !origin }, async () => {
     const headers = { Cookie: `redwood-locale=${tag}` };
     for (const [path, title] of [['/market-sentiment', heading], ['/signin', signIn]]) {
       const response = await fetch(new URL(path, origin), { headers });
@@ -19,18 +19,11 @@ for (const [tag, [heading, signIn]] of Object.entries(locales)) {
       assert.ok(html.includes(title));
     }
     const profile = await fetch(new URL('/volume-profile', origin), { headers });
+    assert.equal(profile.status, 401);
     assert.equal(profile.headers.get('content-language'), tag);
     const response = await fetch(new URL(`/api/market-sentiment?lang=${tag}`, origin));
-    assert.equal(response.headers.get('content-language'), tag);
+    assert.equal(response.status, 401);
     assert.equal(response.headers.get('cache-control'), 'no-store');
-    const body = await response.json();
-    if (response.status === 503) {
-      assert.equal(body.code, 'market_sentiment_unavailable');
-      assert.equal(typeof body.message, 'string');
-    } else {
-      assert.equal(response.status, 200);
-      assert.equal(body.locale, tag);
-      assert.equal(body.schema_version, 1);
-    }
+    assert.equal((await response.json()).error.code, 'unauthorized');
   });
 }

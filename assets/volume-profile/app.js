@@ -6,18 +6,18 @@
   const tw = document.documentElement.lang === 'zh-TW';
   const tr = (zh, english, traditional) => en ? english : (tw && traditional ? traditional : zh);
   const labels = {
-    local:tr('API 分析','API-backed analysis','API 分析'), refresh:tr('刷新行情分析','Refresh analysis','重新整理行情分析'),
-    navFramework:tr('研究框架','Research framework','研究框架'),navCapabilities:tr('平台能力','Capabilities','平台能力'),navHome:tr('返回主站','Main site','返回主站'),
-    productKicker:tr('REDWOOD / 成交结构','REDWOOD / MARKET STRUCTURE','REDWOOD / 成交結構'),titleLead:tr('筹码峰，','Volume,','籌碼峰，'),titleAccent:tr('置于证据之中。','in context.','置於證據之中。'),
+    refresh:tr('刷新行情分析','Refresh analysis','重新整理行情分析'),
+    navFramework:tr('研究框架','Framework','研究框架'),navCapabilities:tr('平台能力','Capabilities','平台能力'),navCases:tr('案例','Cases','案例'),navPrinciples:tr('产品原则','Principles','產品原則'),navSentiment:tr('市场情绪','Market sentiment','市場情緒'),
+    productKicker:tr('REDWOOD RESEARCH / 成交结构','REDWOOD RESEARCH / MARKET STRUCTURE','REDWOOD RESEARCH / 成交結構'),titleLead:tr('筹码峰，','Volume,','籌碼峰，'),titleAccent:tr('置于证据之中。','in context.','置於證據之中。'),
     title:tr('筹码峰分布','Volume profile','籌碼峰分布'),subtitle:tr('先确认来源、时间与覆盖完整性，再把成交密集区与估值、因子、趋势和风险共同纳入判断。','Verify source, time, and coverage first. Then use traded-volume concentration alongside valuation, factors, trend, and risk.','先確認來源、時間與涵蓋完整性，再把成交密集區與估值、因子、趨勢和風險共同納入判斷。'),
     guideSearchTitle:tr('即时搜索代码','Search the directory','即時搜尋代碼'),guideSearch:tr('按股票代码或公司名检索 SEC 发行人目录。','Find SEC-listed issuers by ticker or company name.','按股票代碼或公司名檢索 SEC 發行人目錄。'),
     guideVerifyTitle:tr('先验证数据','Verify before viewing','先驗證資料'),guideVerify:tr('仅通过来源、时间、分页与合计校验的数据才显示筹码峰。','Profiles appear only after provenance, time, pagination, and reconciliation checks.','僅通過來源、時間、分頁與合計校驗的資料才顯示籌碼峰。'),
     guideDecideTitle:tr('多模型交叉判断','Use multiple lenses','多模型交叉判斷'),guideDecide:tr('筹码峰反映历史成交，不单独构成买卖信号。','Volume profile is historical context, not a standalone signal.','籌碼峰反映歷史成交，不單獨構成買賣訊號。'),
     sessionDate:tr('交易日期','Session date'),symbols:tr('股票搜索','Ticker search','股票搜尋'),dataset:tr('当前数据','Current data','目前資料'),restore:tr('恢复演示数据','Restore demo','還原演示資料'),
     chartTitle:tr('价格路径与筹码分布','Price path & volume profile','價格路徑與成交量分布'),table:tr('查看价格档','Price bins','查看價格檔'),shape:tr('窗口收盘位置分析','Window-close position','時段收盤位置分析'),notes:tr('计算口径与边界','Method and boundaries','計算口徑與邊界'),
-    apiHelp:tr('股票代码确认后，Redwood 服务端会通过受控行情 API 获取延迟的 SIP 历史成交，执行内部完整性校验和筹码分布计算，然后仅返回派生分析。用户无需上传文件。','After a ticker is identified, Redwood retrieves delayed historical SIP trades through a controlled server-side API, runs internal completeness checks and volume-profile analysis, and returns only the derived result. No user upload is required.','股票代碼確認後，Redwood 伺服器會透過受控行情 API 取得延遲的 SIP 歷史成交，執行內部完整性檢查和成交量分布計算，再僅回傳衍生分析。使用者無需上傳檔案。'),
-    directoryResult:tr('已识别股票代码','TICKER IDENTIFIED','已識別股票代碼'),noProfileTitle:tr('准备获取市场数据','Ready to analyze market data','準備取得市場資料'),noProfileCopy:tr('选择该股票后，系统会自动调用服务端行情 API、校验数据并计算筹码分布。','Select this ticker to let Redwood fetch, validate, and analyze market data automatically.','選擇此股票後，系統會自動呼叫伺服器行情 API、驗證資料並計算成交量分布。'),
-    fetchProfile:tr('获取并分析','Fetch and analyze','取得並分析'),fetchingTitle:tr('正在分析市场数据','Analyzing market data','正在分析市場資料'),fetchingCopy:tr('系统正在获取延迟 SIP 成交并执行内部完整性校验。','Redwood is retrieving delayed SIP trades and running internal completeness checks.','系統正在取得延遲 SIP 成交並執行內部完整性檢查。'),errorTitle:tr('自动分析暂不可用','Automatic analysis unavailable','自動分析暫不可用'),errorCopy:tr('系统未展示未经授权或未通过校验的数据。无需手工上传，请稍后重试。','Redwood did not display unlicensed or unvalidated data. No manual upload is needed; retry later.','系統未顯示未經授權或未通過驗證的資料。無需手動上傳，請稍後重試。'),realtimeBoundary:tr('所有结果均为延迟历史成交分析，不是实时行情，也不代表当前持仓成本。公开展示需要数据供应商授权。','All results are delayed historical trade analysis—not live quotes or current holder cost basis. Public display requires provider authorization.','所有結果均為延遲歷史成交分析，不是即時行情，也不代表目前持倉成本。公開顯示需要資料供應商授權。'),
+    apiHelp:tr('股票代码确认后，Redwood Research 服务端会通过受控行情 API 获取延迟的 SIP 历史成交，执行内部完整性校验和筹码分布计算，然后仅返回派生分析。用户无需上传文件。','After a ticker is identified, Redwood Research retrieves delayed historical SIP trades through a controlled server-side API, runs internal completeness checks and volume-profile analysis, and returns only the derived result. No user upload is required.','股票代碼確認後，Redwood Research 伺服器會透過受控行情 API 取得延遲的 SIP 歷史成交，執行內部完整性檢查和成交量分布計算，再僅回傳衍生分析。使用者無需上傳檔案。'),
+    directoryResult:tr('已识别股票代码','TICKER IDENTIFIED','已識別股票代碼'),noProfileTitle:tr('准备获取市场数据','Ready to analyze market data','準備取得市場資料'),noProfileCopy:tr('选择该股票后，系统会自动调用服务端行情 API、校验数据并计算筹码分布。','Select this ticker to let Redwood Research fetch, validate, and analyze market data automatically.','選擇此股票後，系統會自動呼叫伺服器行情 API、驗證資料並計算成交量分布。'),
+    fetchProfile:tr('获取并分析','Fetch and analyze','取得並分析'),fetchingTitle:tr('正在分析市场数据','Analyzing market data','正在分析市場資料'),fetchingCopy:tr('系统正在获取延迟 SIP 成交并执行内部完整性校验。','Redwood Research is retrieving delayed SIP trades and running internal completeness checks.','系統正在取得延遲 SIP 成交並執行內部完整性檢查。'),errorTitle:tr('自动分析暂不可用','Automatic analysis unavailable','自動分析暫不可用'),errorCopy:tr('系统未展示未经授权或未通过校验的数据。无需手工上传，请稍后重试。','Redwood Research did not display unlicensed or unvalidated data. No manual upload is needed; retry later.','系統未顯示未經授權或未通過驗證的資料。無需手動上傳，請稍後重試。'),realtimeBoundary:tr('所有结果均为延迟历史成交分析，不是实时行情，也不代表当前持仓成本。公开展示需要数据供应商授权。','All results are delayed historical trade analysis—not live quotes or current holder cost basis. Public display requires provider authorization.','所有結果均為延遲歷史成交分析，不是即時行情，也不代表目前持倉成本。公開顯示需要資料供應商授權。'),
     auditKicker:tr('数据真实性校验','DATA AUTHENTICITY','資料真實性校驗'),auditTitle:tr('知道这张图能证明什么。','Know what the chart proves.','知道這張圖能證明什麼。'),auditOrigin:tr('来源与权限','Source & rights','來源與權限'),auditTime:tr('观察时间','Observation time','觀察時間'),auditChecks:tr('确定性校验','Deterministic checks','確定性校驗'),
     frameworkKicker:tr('研究模型','RESEARCH MODELS','研究模型'),frameworkTitle:tr('筹码峰不是答案，','Volume is one lens,','籌碼峰不是答案，'),frameworkAccent:tr('只是证据之一。','not the answer.','只是證據之一。'),frameworkCopy:tr('主流研究会将基本面、横截面因子、价格趋势、风险与事件催化剂组合使用。筹码峰适合解释历史成交结构，不负责预测未来。','Professional research combines fundamentals, cross-sectional factors, price trend, risk, and catalysts. Volume profile describes historical market structure; it does not forecast the future.','主流研究會將基本面、橫截面因子、價格趨勢、風險與事件催化劑組合使用。籌碼峰適合解釋歷史成交結構，不負責預測未來。'),
     modelValuation:tr('基本面与估值','Fundamentals & valuation','基本面與估值'),modelValuationCopy:tr('现金流、盈利质量、资本回报与情景估值。','Cash flow, earnings quality, returns on capital, and scenario valuation.','現金流、盈利品質、資本回報與情境估值。'),
@@ -39,10 +39,14 @@
       document.cookie = 'redwood-locale=' + picker.value + '; Max-Age=31536000; Path=/; SameSite=Lax';
       const url = new URL(window.location.href);
       url.searchParams.set('lang', picker.value);
+      if (document.body.dataset.defaultSymbol) document.cookie = 'redwood-locale='+picker.value+'; Max-Age=31536000; Path=/; SameSite=Lax';
       window.location.assign(url);
     });
   }
   document.title = labels.title + ' · Redwood Research';
+  $('profile-language').setAttribute('aria-label',tr('语言','Language','語言'));
+  document.querySelector('.site-header-brand').setAttribute('aria-label',tr('Redwood Research 首页','Redwood Research home','Redwood Research 首頁'));
+  document.querySelector('.site-header-links').setAttribute('aria-label',tr('主导航','Main navigation','主導覽'));
   document.querySelectorAll('[data-t]').forEach(el => { el.textContent = labels[el.dataset.t] || ''; });
   $('search').placeholder = tr('输入 AAPL、NVDA 或公司名','Enter AAPL, NVDA, or a company','輸入 AAPL、NVDA 或公司名');
   $('search').setAttribute('aria-label', $('search').placeholder);
@@ -61,15 +65,18 @@
   const gapNames = {pagination_incomplete:tr('分页未取完','Pagination incomplete','分頁尚未取完'),conflicting_trade_identity:tr('成交编号冲突','Conflicting trade IDs','成交編號衝突'),invalid_trade_record:tr('成交记录无效','Invalid trade record','成交記錄無效'),acquisition_incomplete:tr('数据获取中断','Retrieval interrupted','資料取得中斷'),time_bar_budget_exceeded:tr('分钟曲线超出边界','Minute-path budget exceeded','分鐘曲線超出邊界'),no_eligible_trades:tr('窗口内无有效成交','No eligible trades','時段內無有效成交')};
   const standard = {'regular-session':tr('全天','Full session'), 'closing-half-hour':tr('尾盘 30 分钟','Final 30 min','尾盤 30 分鐘')};
   const nameOf = p => standard[p.window] || (clock(p.start)+'–'+clock(p.end)+' ET');
-  const period = p => p.window==='regular-session'?'09:30–16:00 ET':p.window==='closing-half-hour'?'15:30–16:00 ET':nameOf(p);
+  const period = p => clock(p.start)+'–'+(p.scheduledClose?clock(p.scheduledClose):p.window==='custom'?clock(p.end):'16:00')+' ET';
   const key = p => [p.symbol,p.start,p.end,p.step].join('|');
+  const query = new URL(location.href).searchParams;
+  const defaultSymbol = document.body.dataset.defaultSymbol;
   const initial = JSON.parse($('profile-initial').textContent);
   const directory = JSON.parse($('symbol-directory').textContent);
   const directoryBySymbol = new Map(directory.symbols.map(row => [row.s,row]));
   $('directory-note').textContent = tr('SEC 发行人目录','SEC issuer directory','SEC 發行人目錄')+' · '+directory.symbols.length.toLocaleString()+' · '+directory.asOf;
-  let dataset, isDemo, names, selected, day, current, preferred, directorySelected=null, loadingSymbol=null, failedSymbol=null, requestVersion=0, cleanup=null, unit='percent', tablePage=0;
-  const visible = {showVA:true,showVwap:true,showClose:true};
+  let dataset, isDemo, names, selected, day, current, preferred, directorySelected=null, loadingSymbol=null, failedSymbol=null, pendingSchedule=null, requestVersion=0, cleanup=null, unit='percent', tablePage=0;
+  const visible = {showVA:true,showVwap:true,showMA50:true,showMA200:true};
   function reset() {
+    requestVersion++;pendingSchedule=null;
     dataset=ProfileModel.parse(initial.documents);isDemo=initial.demo===true;names=initial.names||{};selected=initial.selectedSymbol;current=null;preferred='regular-session';day=dataset.profiles.map(p=>p.date).sort((a,b)=>a.localeCompare(b)).pop();directorySelected=null;loadingSymbol=null;failedSymbol=null;
     $('search').value='';message('');render();
   }
@@ -106,23 +113,27 @@
   }
 
   function auditList(items){$('audit-list').replaceChildren(...items.map(item=>node('li',item)));}
-  async function fetchProfile(row) {
+  async function fetchProfile(row, window = 'regular-session') {
     const version=++requestVersion;
-    directorySelected=row;selected=row.s;current=null;loadingSymbol=row.s;failedSymbol=null;message('');render();
+    directorySelected=row;selected=row.s;current=null;loadingSymbol=row.s;failedSymbol=null;pendingSchedule=null;preferred=window;message('');render();
     try{
-      const response=await fetch('/api/volume-profile?symbol='+encodeURIComponent(row.s),{headers:{accept:'application/json'}});
+      const response=await fetch('/api/volume-profile?symbol='+encodeURIComponent(row.s)+'&window='+window,{headers:{accept:'application/json'}});
       const body=await response.json();
       if(!response.ok)throw new Error(body?.error?.code||'market_data_unavailable');
-      const added=ProfileModel.parse(body.profile);
-      if(!added.profiles.length)throw new Error('empty_profile');
       if(version!==requestVersion)return;
+      if(body.profile?.availability==='awaiting_delayed_data'){
+        pendingSchedule=body.profile.session_schedule;
+        return;
+      }
+      const added=ProfileModel.parse(body.profile);
+      if(added.profiles[0]?.window!==window)throw new Error('incorrect_profile_window');
       const baseProfiles=isDemo?[]:dataset.profiles,baseContexts=isDemo?[]:dataset.contexts;
       const byKey=new Map(baseProfiles.map(p=>[key(p),p]));
       added.profiles.forEach(p=>byKey.set(key(p),p));
       dataset={profiles:[...byKey.values()],contexts:[...baseContexts,...added.contexts]};
       if(isDemo)names={};names[row.s]=row.n;isDemo=false;directorySelected=null;failedSymbol=null;
       selected=added.profiles[0].symbol;day=added.profiles[0].date;current=key(added.profiles[0]);preferred=added.profiles[0].window;
-      message('Market data retrieved and analyzed by Redwood.');
+      message('');
     }catch{
       if(version!==requestVersion)return;
       failedSymbol=row.s;message(labels.errorCopy);
@@ -132,12 +143,14 @@
   }
   function renderUnavailable(row) {
     cleanup?.();cleanup=null;$('profile-details').hidden=true;$('unavailable').hidden=false;$('insight').hidden=true;
-    const loading=loadingSymbol===row.s,failed=failedSymbol===row.s;
-    $('ticker').textContent=row.s;$('company').textContent=row.n;$('badge').textContent=loading?'API request in progress':failed?'Analysis unavailable':'Ticker identity verified';$('timing').textContent=row.e||'SEC';$('windows').replaceChildren();
-    $('unavailable-title').textContent=loading?labels.fetchingTitle:failed?labels.errorTitle:labels.noProfileTitle;
-    $('unavailable-copy').textContent=loading?labels.fetchingCopy:failed?labels.errorCopy:labels.noProfileCopy;
+    const loading=loadingSymbol===row.s,failed=failedSymbol===row.s,pending=pendingSchedule;
+    $('ticker').textContent=row.s;$('company').textContent=row.n;$('badge').textContent=loading?'API request in progress':failed?'Analysis unavailable':'Ticker identity verified';$('timing').textContent=pending?pending.session_date+' · '+clock(pending.start)+'–'+clock(pending.close)+' ET':row.e||'SEC';
+    $('windows').replaceChildren(...Object.entries(standard).map(([id,name])=>button(name,id===preferred,()=>void fetchProfile(row,id))));
+    $('windows').querySelectorAll('button').forEach(b=>b.disabled=loading);
+    $('unavailable-title').textContent=loading?labels.fetchingTitle:pending?tr('等待延迟数据','Awaiting delayed data','等待延遲資料'):failed?labels.errorTitle:labels.noProfileTitle;
+    $('unavailable-copy').textContent=loading?labels.fetchingCopy:pending?tr('常规交易时段已结束。预计可查询时间：','The regular session has closed. Historical data becomes eligible at ','常規交易時段已結束。預計可查詢時間：')+stamp(pending.available_at):failed?labels.errorCopy:labels.noProfileCopy;
     $('fetch-empty').textContent=loading?'Analyzing…':failed?'Retry automatic analysis':labels.fetchProfile;$('fetch-empty').disabled=loading;
-    $('source-name').textContent=loading?'Redwood market-data API':tr('SEC 发行人目录','SEC issuer directory','SEC 發行人目錄');$('source-meta').textContent=loading?'Delayed SIP retrieval and validation':directory.asOf+' · '+tr('不是行情数据','not market data','不是行情資料');$('restore').hidden=true;
+    $('source-name').textContent=loading?'Redwood Research market-data API':tr('SEC 发行人目录','SEC issuer directory','SEC 發行人目錄');$('source-meta').textContent=loading?'Delayed SIP retrieval and validation':directory.asOf+' · '+tr('不是行情数据','not market data','不是行情資料');$('restore').hidden=true;
     $('audit-verdict').textContent=tr('没有市场数据','No market data','沒有市場資料');$('audit-source').textContent=tr('SEC 代码与发行人映射','SEC ticker-to-issuer mapping','SEC 代碼與發行人映射');$('audit-rights').textContent=tr('公开目录；不含成交记录','Public directory; no trades','公開目錄；不含成交紀錄');$('audit-asof').textContent=directory.asOf;$('audit-window').textContent=tr('未连接成交窗口','No trade window connected','未連接成交時段');auditList([tr('股票代码与公司名匹配','Ticker and issuer matched','股票代碼與公司名匹配')]);$('audit-caveat').textContent=labels.realtimeBoundary;
   }
 
@@ -145,32 +158,50 @@
     const synthetic=isDemo;
     $('audit-verdict').textContent=synthetic?tr('模拟数据','Synthetic','模擬資料'):(p.complete?tr('结构校验通过','Structure validated','結構校驗通過'):tr('未通过完整性校验','Incomplete','未通過完整性校驗'));
     $('audit-source').textContent=synthetic?tr('虚构成交样本','Fictional trade sample','虛構成交樣本'):p.source;
-    $('audit-rights').textContent=synthetic?tr('仅用于界面演示，不是市场行情','Interface demo only; not market data','僅用於介面演示，不是市場行情'):(p.rightsDecision+' · '+(p.networkChecked?tr('Redwood 网络获取','network fetched by Redwood','Redwood 網路取得'):tr('调用方提供文件','caller-supplied file','呼叫方提供檔案')));
+    $('audit-rights').textContent=synthetic?tr('仅用于界面演示，不是市场行情','Interface demo only; not market data','僅用於介面演示，不是市場行情'):(p.rightsDecision+' · '+(p.networkChecked?tr('Redwood Research 网络获取','network fetched by Redwood Research','Redwood Research 網路取得'):tr('调用方提供文件','caller-supplied file','呼叫方提供檔案')));
     $('audit-asof').textContent=stamp(p.asOf);$('audit-window').textContent=period(p)+' · '+p.sources.length+' '+tr('个来源页','source page(s)','個來源頁');
     const items=[tr('价格网格连续且档宽一致','Aligned, contiguous price grid','價格網格連續且檔寬一致'),tr('各档成交量与总股数相符','Price-bin shares reconcile to total','各檔成交量與總股數相符'),synthetic?'The illustrative minute path is synthetic and never mixed with provider results':tr('分钟价格与成交量由同一批逐笔成交聚合','Minute price and volume reconcile to the same accepted prints','分鐘價格與成交量由同一批逐筆成交聚合'),synthetic?'Synthetic levels are a fixed interface fixture':'POC, value area, and position analysis are supplied by Redwood Research'];
     if(p.complete)items.push(tr('分页、时间戳、来源哈希与质量状态通过','Pagination, timestamps, page hashes, and quality status pass','分頁、時間戳、來源雜湊與品質狀態通過'));else items.push(tr('最终筹码水平已被系统扣留','Final levels withheld','最終籌碼水準已被系統扣留'));
     auditList(items);
-    $('audit-caveat').textContent=synthetic?tr('当前公开页面默认展示虚构股票与虚构成交，不能用于投资判断。','The public page starts with fictional tickers and fictional trades; it is not investment data.','目前公開頁面預設顯示虛構股票與虛構成交，不能用於投資判斷。'):tr('这些校验证明文件内部一致，但保存的 JSON 不是数据供应商的数字签名。公开实时展示仍需供应商与交易所授权。','These checks prove internal consistency, but saved JSON is not a provider-signed attestation. Public real-time display still requires provider and exchange licensing.','這些校驗證明檔案內部一致，但儲存的 JSON 不是資料供應商的數位簽章。公開即時顯示仍需供應商與交易所授權。');
+    $('audit-caveat').textContent=synthetic?tr('演示使用虚构股票和成交，不能用于投资判断。','This demo shows fictional tickers and trades; it is not investment data.','演示使用虛構股票和成交，不能用於投資判斷。'):tr('这些校验证明文件内部一致，但保存的 JSON 不是数据供应商的数字签名。公开实时展示仍需供应商与交易所授权。','These checks prove internal consistency, but saved JSON is not a provider-signed attestation. Public real-time display still requires provider and exchange licensing.','這些校驗證明檔案內部一致，但儲存的 JSON 不是資料供應商的數位簽章。公開即時顯示仍需供應商與交易所授權。');
   }
 
   function render() {
     const available=dataset.profiles.filter(p=>p.date===day),symbols=[...new Set(available.map(p=>p.symbol))].sort((a,b)=>a.localeCompare(b));
     if(!directorySelected&&!symbols.includes(selected))selected=symbols[0];
     const choices=available.filter(p=>p.symbol===selected).sort((a,b)=>optionOrder(a)-optionOrder(b)||a.start.localeCompare(b.start)||a.step-b.step);
-    const p=choices.find(x=>key(x)===current)||choices.find(x=>x.window===preferred)||choices[0];
+    const p=directorySelected?null:choices.find(x=>key(x)===current)||choices.find(x=>x.window===preferred)||choices[0];
     const dates=[...new Set(dataset.profiles.map(x=>x.date))].sort((a,b)=>b.localeCompare(a));$('date').replaceChildren(...dates.map(x=>{const o=node('option',x);o.value=x;return o;}));$('date').value=day;
     directoryResults(symbols,available,p);
+    $('return-demo').hidden=isDemo&&!directorySelected;
+    $('refresh-label').textContent=isDemo&&!directorySelected&&defaultSymbol
+      ?tr('加载 ','Load ','載入 ')+defaultSymbol:labels.refresh;
+    $('refresh').disabled=!!loadingSymbol;
     if(directorySelected&&!p){renderUnavailable(directorySelected);return;}
     if(!p)return;
     current=key(p);$('profile-details').hidden=false;$('unavailable').hidden=true;$('insight').hidden=false;
-    $('ticker').textContent=p.symbol;$('company').textContent=companyName(p.symbol);$('badge').textContent=isDemo?labels.sample:(p.complete?'Exact accepted prints':labels.gap);$('timing').textContent=period(p)+(isDemo?' · illustrative 1-minute path':' · exact 1-minute path')+' · USD';
+    $('ticker').textContent=p.symbol;$('company').textContent=companyName(p.symbol);$('badge').textContent=isDemo?labels.sample:(p.complete?labels.complete:labels.gap);$('timing').textContent=p.date+' · '+period(p)+' · '+(isDemo?labels.sample:p.source)+' · USD';
     $('source-name').textContent=isDemo?labels.sample:p.source;$('source-meta').textContent=isDemo?tr('虚构标的与成交数据','Fictional instruments and trades','虛構標的與成交資料'):(p.sources.length+' '+tr('个已哈希来源页','hashed source page(s)','個已雜湊來源頁'));$('restore').hidden=true;
-    $('windows').replaceChildren(...choices.map(x=>{const dup=choices.filter(a=>a.window===x.window).length>1,b=button(nameOf(x)+(dup?' · '+price(x.step,x.step):''),key(x)===current,()=>{current=key(x);preferred=x.window;render();});b.title=period(x)+' · '+x.status;return b;}));
+    const windowButtons=choices.map(x=>{const dup=choices.filter(a=>a.window===x.window).length>1,b=button(nameOf(x)+(dup?' · '+price(x.step,x.step):''),key(x)===current,()=>{current=key(x);preferred=x.window;render();});b.title=period(x)+' · '+x.status;return b;});
+    const row=directoryBySymbol.get(selected);
+    if(!isDemo&&row) for(const [id,name] of Object.entries(standard)){
+      if(!choices.some(x=>x.window===id))windowButtons.push(button(name,false,()=>void fetchProfile(row,id)));
+    }
+    $('windows').replaceChildren(...windowButtons);
     const c=context(p),analysis=p.analysis,displayLast=isDemo?(c?.close??null):(analysis?.reference.price??null),reference=displayLast,range=b=>b?price(b.lower,p.step)+'–'+price(b.upper,p.step):'—',kpi=(label,value,sub)=>{const e=node('div',null,'kpi');e.append(node('span',label),node('b',value),node('small',sub));return e;};
     $('kpis').replaceChildren(kpi(labels.poc,range(p.poc),p.poc?pct(p.poc.percent)+' '+tr('窗口成交量','of window shares','時段成交量'):labels.gap),kpi(labels.va,range(p.valueArea),p.valueArea?pct(p.valueArea.percent)+' '+tr('实际覆盖','actual coverage','實際涵蓋'):labels.gap),kpi(isDemo?'Synthetic close':'Last accepted price',price(displayLast),isDemo?'Illustrative path only':analysis?analysis.timeBarCount+' exact 1-minute bars':'Backend analysis unavailable'),kpi(tr('窗口成交量','Window volume','時段成交量'),compact(p.totalShares),fmt(p.accepted,0)+' '+tr('笔成交','trades','筆成交')));
     $('bin-step').textContent=tr('档宽','Bin size','檔寬')+' $'+price(p.step,p.step);$('units').replaceChildren(...['percent','shares'].map(u=>button(labels[u],unit===u,()=>{unit=u;render();})));
     function legend(label,css,opt,enabled=true){const e=opt?button('',visible[opt]&&enabled,()=>{visible[opt]=!visible[opt];render();}):node('span');if(opt)e.disabled=!enabled;e.append(node('i',null,'swatch '+css),node('span',label));return e;}
     $('legend').replaceChildren(legend(labels.poc,'poc'),legend(labels.va,'va','showVA',p.complete),legend('VWAP','vwap','showVwap',p.complete),legend('Price path','price'),legend('Time volume','volume'));
+    const maText=p.dailyStudyStatus==='rights_unconfirmed'
+      ?tr('未确认公开展示许可','Public display rights unconfirmed','未確認公開展示許可')
+      :tr('缺少足够的已验证日收盘价','Insufficient verified daily closes','缺少足夠的已驗證日收盤價');
+    $('daily-studies').replaceChildren(...[50,200].map(length=>{
+      const value=p.movingAverages[length], id='showMA'+length;
+      if(value)return legend('MA'+length+' $'+price(value,p.step),'ma'+length,id);
+      return node('span','MA'+length+' · '+maText);
+    }));
+    if(Object.keys(p.movingAverages).length)$('daily-studies').append(node('span','Alpaca SIP · split-adjusted daily closes · '+p.date));
     cleanup?.();$('chart').replaceChildren();$('inspect').textContent=labels.hint;
     if(p.complete){cleanup=ProfileChart.render($('chart'),p,{...visible,unit,synthetic:isDemo,syntheticClose:displayLast,onInspect:b=>{$('inspect').textContent=!b?labels.hint:b.time?new Date(b.time).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'})+' ET · $'+price(b.close)+' · '+fmt(b.shares,0)+' shares':range(b)+' USD · '+fmt(b.shares,0)+' '+labels.shares+' · '+pct(b.percent);}});}else{cleanup=null;const box=node('div',null,'empty');box.append(node('h3',labels.gap),node('p',tr('该窗口未通过完整性检查，无法确定成交峰。','This window did not pass validation. Final levels are unavailable.','此時段未通過完整性檢查，無法確定成交峰。')),node('small',p.gaps.map(g=>gapNames[g]||g).join(' · ')));$('chart').append(box);$('inspect').textContent=tr('剩余价格档仅供核查','Available bins are diagnostic','現有價格檔僅供核查');}
     $('open-table').disabled=!p.bins.length;$('close-ref').textContent=reference!=null?(isDemo?'Synthetic close  $':'Last accepted  $')+price(reference):'';const body=$('insight-body');body.replaceChildren();
@@ -188,7 +219,11 @@
   $('open-table').onclick=()=>{tablePage=0;showTable();$('table-dialog').showModal();};
   $('dismiss').onclick=()=>$('table-dialog').close();
   $('restore').onclick=reset;
-  $('fetch-empty').onclick=()=>{if(directorySelected)void fetchProfile(directorySelected);};
-  $('refresh').onclick=()=>{const row=directoryBySymbol.get(selected);if(row)void fetchProfile(row);};
+  $('return-demo').onclick=reset;
+  $('fetch-empty').onclick=()=>{if(directorySelected)void fetchProfile(directorySelected,preferred);};
+  $('refresh').onclick=()=>{const row=directoryBySymbol.get(isDemo&&!directorySelected?defaultSymbol:selected);if(row)void fetchProfile(row,isDemo&&!directorySelected?'regular-session':preferred);};
   reset();
+  const requested=query.get('symbol')??(query.get('demo')==='1'?null:defaultSymbol);
+  const requestedRow=directoryBySymbol.get(requested);
+  if(requestedRow) setDirectorySymbol(requestedRow);
 })();

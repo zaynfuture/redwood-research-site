@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
@@ -21,7 +23,8 @@ import {
 import { WaitlistForm } from '@/components/waitlist-form';
 import { SignInDialog } from '@/components/sign-in-dialog';
 
-import { LanguageSelect, useLocale } from '@/components/locale-provider';
+import { useLocale } from '@/components/locale-provider';
+import { SiteHeader } from '@/components/site-header';
 import type { Locale } from '@/lib/locale';
 
 const reportControls = {
@@ -34,16 +37,16 @@ const sentimentLabel = { en: 'Market sentiment', 'zh-CN': '市场情绪', 'zh-TW
 
 const localeMetadata: Record<Locale, { title: string; description: string }> = {
   en: {
-    title: 'Redwood - U.S. Equity Research Platform',
+    title: 'Redwood Research - U.S. Equity Research Platform',
     description:
       'A local-first, evidence-led, and auditable U.S. equity research platform.',
   },
   'zh-CN': {
-    title: 'Redwood - 美股投研平台',
+    title: 'Redwood Research - 美股投研平台',
     description: '本地优先、证据驱动且可审计的美股投研平台。',
   },
   'zh-TW': {
-    title: 'Redwood - 美股投研平台',
+    title: 'Redwood Research - 美股投研平台',
     description: '本地優先、證據驅動且可稽核的美股投研平台。',
   },
 };
@@ -81,14 +84,13 @@ const reportImages = [
 const content = {
   en: {
     profile: 'Market Structure · Volume Profile',
-    nav: ['Framework', 'Capabilities', 'Cases', 'Principles'],
     account: 'Sign in',
     eyebrow: 'Built for evidence-led investing',
     heroLead: 'Research,',
     heroAccent: 'rooted',
     heroTail: 'in evidence',
     heroCopy:
-      'Redwood is a local-first U.S. equity research platform. It turns scattered filings, market data, and private knowledge into conclusions you can trace and verify.',
+      'Redwood Research is a local-first U.S. equity research platform. It turns scattered filings, market data, and private knowledge into conclusions you can trace and verify.',
     explore: 'Explore the research system',
     view: 'View capabilities',
     badges: ['Local-first', 'Evidence-auditable', 'No order execution'],
@@ -138,7 +140,7 @@ const content = {
     systemTitle: 'Not more information.',
     systemAccent: 'A better research order.',
     systemCopy:
-      'Redwood examines a company through a 5+2 framework: five objective research modules, followed by a two-sided stress test of the case for—and against—investing.',
+      'Redwood Research examines a company through a 5+2 framework: five objective research modules, followed by a two-sided stress test of the case for—and against—investing.',
     framework: [
       [
         '01',
@@ -174,7 +176,7 @@ const content = {
     capabilitiesIndex: '02 / PLATFORM CAPABILITIES',
     capabilitiesTitle: 'Every conclusion has a provenance.',
     capabilitiesCopy:
-      'From the moment information enters Redwood, its source, version, rights, and location are recorded. Agents find connections; humans retain judgment.',
+      'From the moment information enters Redwood Research, its source, version, rights, and location are recorded. Agents find connections; humans retain judgment.',
     capabilities: [
       [
         'Local knowledge engine',
@@ -198,7 +200,7 @@ const content = {
       ],
       [
         'Read-only safety boundary',
-        'Redwood supports research and risk understanding, never order execution. Sensitive credentials stay outside model context and outputs.',
+        'Redwood Research supports research and risk understanding, never order execution. Sensitive credentials stay outside model context and outputs.',
       ],
       [
         'Email & messaging delivery',
@@ -217,7 +219,7 @@ const content = {
     casesTitle: 'Useful at portfolio scale.',
     casesAccent: 'Private by construction.',
     casesCopy:
-      'Illustrative report layouts show how Redwood communicates portfolio findings. Sensitive fields are replaced with non-recoverable mosaic placeholders—no live account or position data is embedded in this page.',
+      'Illustrative report layouts show how Redwood Research communicates portfolio findings. Sensitive fields are replaced with non-recoverable mosaic placeholders—no live account or position data is embedded in this page.',
     caseOne: [
       'CASE 01',
       'FULL-VIEW ASSET REPORT',
@@ -284,19 +286,18 @@ const content = {
     ctaTail: 'who go',
     ctaAccent: 'deep.',
     ctaCopy:
-      'Redwood is evolving in private beta with investors who value evidence, process, and long-term thinking.',
+      'Redwood Research is evolving in private beta with investors who value evidence, process, and long-term thinking.',
     footer: 'Research infrastructure for thoughtful investors.',
   },
   'zh-CN': {
     profile: '市场结构 · 筹码峰分布',
-    nav: ['研究框架', '平台能力', '案例', '产品原则'],
     account: '登录',
     eyebrow: '为证据驱动的投资研究而构建',
     heroLead: '研究，',
     heroAccent: '扎根',
     heroTail: '于证据',
     heroCopy:
-      'Redwood 是一个本地优先的美股投研平台，将分散的公司文件、市场数据与私有知识转化为可追溯、可验证的研究结论。',
+      'Redwood Research 是一个本地优先的美股投研平台，将分散的公司文件、市场数据与私有知识转化为可追溯、可验证的研究结论。',
     explore: '探索研究系统',
     view: '查看平台能力',
     badges: ['本地优先', '证据可审计', '不执行交易'],
@@ -330,7 +331,7 @@ const content = {
     systemTitle: '不是堆积更多信息，',
     systemAccent: '而是建立更好的研究顺序。',
     systemCopy:
-      'Redwood 采用 5+2 框架研究公司：先完成五个客观模块，再从投资逻辑与反方证据两侧对结论进行压力测试。',
+      'Redwood Research 采用 5+2 框架研究公司：先完成五个客观模块，再从投资逻辑与反方证据两侧对结论进行压力测试。',
     framework: [
       ['01', '行业', '分析行业结构、周期位置与竞争力量'],
       ['02', '商业模式', '拆解收入引擎、护城河与单位经济'],
@@ -345,7 +346,7 @@ const content = {
     capabilitiesIndex: '02 / 平台能力',
     capabilitiesTitle: '每个结论都有出处。',
     capabilitiesCopy:
-      '信息进入 Redwood 后，其来源、版本、权利与位置都会被记录。Agent 负责发现连接，人保留最终判断。',
+      '信息进入 Redwood Research 后，其来源、版本、权利与位置都会被记录。Agent 负责发现连接，人保留最终判断。',
     capabilities: [
       [
         '本地知识引擎',
@@ -369,7 +370,7 @@ const content = {
       ],
       [
         '只读安全边界',
-        'Redwood 支持研究与风险理解，不执行交易；敏感凭据不进入模型上下文或输出。',
+        'Redwood Research 支持研究与风险理解，不执行交易；敏感凭据不进入模型上下文或输出。',
       ],
       [
         '邮件与即时通讯交付',
@@ -388,7 +389,7 @@ const content = {
     casesTitle: '服务于全资产视角，',
     casesAccent: '隐私从设计开始。',
     casesCopy:
-      '以下为 Redwood 报告的示意布局。敏感字段使用不可逆的马赛克占位符，页面中不包含任何真实账户或持仓数据。',
+      '以下为 Redwood Research 报告的示意布局。敏感字段使用不可逆的马赛克占位符，页面中不包含任何真实账户或持仓数据。',
     caseOne: [
       '案例 01',
       '全口径资产报告',
@@ -448,19 +449,18 @@ const content = {
     ctaTitle: '为深度研究的',
     ctaTail: '投资者而生',
     ctaAccent: '。',
-    ctaCopy: 'Redwood 正与重视证据、流程和长期思考的投资者共同推进私有测试。',
+    ctaCopy: 'Redwood Research 正与重视证据、流程和长期思考的投资者共同推进私有测试。',
     footer: '为审慎投资者打造的研究基础设施。',
   },
   'zh-TW': {
     profile: '市場結構 · 籌碼峰分布',
-    nav: ['研究框架', '平台能力', '案例', '產品原則'],
     account: '登入',
     eyebrow: '為證據驅動的投資研究而建',
     heroLead: '研究，',
     heroAccent: '扎根',
     heroTail: '於證據',
     heroCopy:
-      'Redwood 是一個本地優先的美股投研平台，將分散的公司文件、市場資料與私有知識轉化為可追溯、可驗證的研究結論。',
+      'Redwood Research 是一個本地優先的美股投研平台，將分散的公司文件、市場資料與私有知識轉化為可追溯、可驗證的研究結論。',
     explore: '探索研究系統',
     view: '查看平台能力',
     badges: ['本地優先', '證據可稽核', '不執行交易'],
@@ -498,7 +498,7 @@ const content = {
     systemTitle: '不是堆積更多資訊，',
     systemAccent: '而是建立更好的研究順序。',
     systemCopy:
-      'Redwood 採用 5+2 框架研究公司：先完成五個客觀模組，再從投資邏輯與反方證據兩側對結論進行壓力測試。',
+      'Redwood Research 採用 5+2 框架研究公司：先完成五個客觀模組，再從投資邏輯與反方證據兩側對結論進行壓力測試。',
     framework: [
       ['01', '產業', '分析產業結構、週期位置與競爭力量'],
       ['02', '商業模式', '拆解收入引擎、護城河與單位經濟'],
@@ -513,7 +513,7 @@ const content = {
     capabilitiesIndex: '02 / 平台能力',
     capabilitiesTitle: '每個結論都有出處。',
     capabilitiesCopy:
-      '資訊進入 Redwood 後，其來源、版本、權利與位置都會被記錄。Agent 負責發現連結，人保留最終判斷。',
+      '資訊進入 Redwood Research 後，其來源、版本、權利與位置都會被記錄。Agent 負責發現連結，人保留最終判斷。',
     capabilities: [
       [
         '本地知識引擎',
@@ -537,7 +537,7 @@ const content = {
       ],
       [
         '唯讀安全邊界',
-        'Redwood 支援研究與風險理解，不執行交易；敏感憑據不進入模型脈絡或輸出。',
+        'Redwood Research 支援研究與風險理解，不執行交易；敏感憑據不進入模型脈絡或輸出。',
       ],
       [
         '郵件與即時通訊交付',
@@ -556,7 +556,7 @@ const content = {
     casesTitle: '服務於全資產視角，',
     casesAccent: '隱私從設計開始。',
     casesCopy:
-      '以下為 Redwood 報告的示意版面。敏感欄位使用不可逆的馬賽克佔位符，頁面中不包含任何真實帳戶或持倉資料。',
+      '以下為 Redwood Research 報告的示意版面。敏感欄位使用不可逆的馬賽克佔位符，頁面中不包含任何真實帳戶或持倉資料。',
     caseOne: [
       '案例 01',
       '全口徑資產報告',
@@ -616,7 +616,7 @@ const content = {
     ctaTitle: '為深度研究的',
     ctaTail: '投資者而生',
     ctaAccent: '。',
-    ctaCopy: 'Redwood 正與重視證據、流程和長期思考的投資者共同推進私有測試。',
+    ctaCopy: 'Redwood Research 正與重視證據、流程和長期思考的投資者共同推進私有測試。',
     footer: '為審慎投資者打造的研究基礎設施。',
   },
 } as const;
@@ -642,36 +642,10 @@ export default function Home() {
 
   return (
     <main className="home-page min-h-screen overflow-hidden bg-background text-foreground">
-      <nav className="home-nav mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-5 lg:px-10">
-        <a
-          href="#top"
-          className="flex items-center gap-3"
-          aria-label="Redwood home"
-        >
-          <span className="brand-mark">
-            <span />
-          </span>
-          <span className="font-mono text-[15px] font-semibold tracking-[0.08em]">
-            REDWOOD
-          </span>
-        </a>
-        <div className="hidden items-center gap-7 text-sm text-muted-foreground lg:flex">
-          {copy.nav.map((label, i) => (
-            <a
-              className="nav-link"
-              href={['#framework', '#capabilities', '#cases', '#principles'][i]}
-              key={label}
-            >
-              {label}
-            </a>
-          ))}
-        </div>
-        <div className="nav-actions">
-          <LanguageSelect />
-          <SignInDialog label={copy.account} />
-          <WaitlistForm source="header" locale={locale} />
-        </div>
-      </nav>
+      <SiteHeader home actions={<>
+        <SignInDialog label={copy.account} />
+        <WaitlistForm source="header" locale={locale} />
+      </>} />
 
       <section
         id="top"
@@ -682,7 +656,7 @@ export default function Home() {
             {copy.eyebrow}
           </div>
           <h1 className="home-title mt-6 font-heading">
-            {copy.heroLead}
+            {copy.heroLead}{' '}
             <br />
             <span className="heading-accent text-primary">
               {copy.heroAccent}
@@ -699,6 +673,12 @@ export default function Home() {
             <a href="/market-sentiment" className="button button-outline">
               {sentimentLabel[locale]}
             </a>
+            <Link href="/dashboard" className="button button-outline">
+              {{ en: 'Account', 'zh-CN': '账户', 'zh-TW': '帳戶' }[locale]}
+            </Link>
+            <Link href="/signup" className="button button-outline">
+              {{ en: 'Create account', 'zh-CN': '创建账户', 'zh-TW': '建立帳戶' }[locale]}
+            </Link>
           </div>
           <div className="home-research-links mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
             <a href="#framework">{copy.explore}</a>
@@ -729,7 +709,7 @@ export default function Home() {
                 <span className="terminal-dot" />
               </div>
               <span className="font-mono text-[10px] tracking-[0.18em] text-white/45">
-                REDWOOD / RESEARCH RUN
+                REDWOOD RESEARCH / WORKFLOW
               </span>
               <span className="rounded-full border border-white/10 px-2 py-1 font-mono text-[9px] text-[#e7a293]">
                 {copy.illustrative}
@@ -920,7 +900,7 @@ export default function Home() {
             </div>
             <p className="section-copy">{copy.casesCopy}</p>
           </div>
-          <div className="report-gallery" aria-label="Redwood report examples">
+          <div className="report-gallery" aria-label="Redwood Research report examples">
             {reportImages.map((report, index) => (
               <figure className="report-gallery-item" key={report.src}>
                 <a
@@ -1165,7 +1145,7 @@ export default function Home() {
             <span className="brand-mark">
               <span />
             </span>
-            <strong className="font-mono tracking-[.12em]">REDWOOD</strong>
+            <strong className="font-mono tracking-[.12em]">REDWOOD RESEARCH</strong>
           </div>
           <p>{copy.footer}</p>
           <p>© 2026 Cortex Hubs</p>

@@ -3,9 +3,9 @@
   'use strict';
 
   const NS='http://www.w3.org/2000/svg',instances=new WeakMap();
-  const c={ink:'#2d2c29',muted:'#6d6a64',grid:'#e6e1d9',paper:'#fffdf9',outside:'#d5d0c8',
-    value:'#78a99f',valueDark:'#4e887c',valueBand:'#eaf3f0',peak:'#a63d2c',vwap:'#bd6d4e',
-    up:'#6e9d8d',down:'#c67c70',cross:'#7b7770'};
+  const c={ink:'#f3eeeb',muted:'#bcbabd',grid:'#36383b',paper:'#131416',outside:'#62676e',
+    value:'#7798bd',valueDark:'#a5c3e3',valueBand:'#1c2734',peak:'#f3755e',vwap:'#e6a579',
+    up:'#63c7af',down:'#dc7668',cross:'#c4bdbb',tooltip:'#252629',ma50:'#64d4ef',ma200:'#f6b56b'};
 
   const el=(name,attrs={},text)=>{const n=document.createElementNS(NS,name);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,String(v));if(text!==undefined)n.textContent=text;return n;};
   const text=(parent,x,y,value,attrs={})=>{const n=el('text',{x,y,fill:c.muted,'font-size':12,'dominant-baseline':'middle',...attrs},value);parent.append(n);return n;};
@@ -51,7 +51,7 @@
     function clearInspect(){if(!layout)return;layout.overlay.replaceChildren();root.removeAttribute('aria-valuetext');selection={kind:null,index:-1};options.onInspect?.(null);}
     function tooltip(lines,x,y,width=190){
       const g=layout.overlay,boxH=lines.length*17+16,bx=Math.max(6,Math.min(layout.width-width-6,x)),by=Math.max(layout.top,Math.min(layout.height-boxH-5,y));
-      g.append(el('rect',{x:bx,y:by,width,height:boxH,rx:6,fill:c.ink,opacity:.96}));
+      g.append(el('rect',{x:bx,y:by,width,height:boxH,rx:6,fill:c.tooltip,stroke:c.grid,opacity:.98}));
       lines.forEach((line,i)=>text(g,bx+10,by+15+i*17,line,{fill:i?'#eaded7':'white','font-size':i?11:12,'font-weight':i?450:650}));
     }
 
@@ -59,7 +59,7 @@
       if(!layout||!layout.rows[index])return;const b=layout.rows[index],top=layout.y(b.upper),bottom=layout.y(b.lower),mid=(top+bottom)/2;
       selection={kind:'profile',index};layout.overlay.replaceChildren();
       layout.overlay.append(el('rect',{x:layout.left,y:top,width:layout.plotRight-layout.left,height:Math.max(1,bottom-top),fill:'none',stroke:c.peak,'stroke-dasharray':'3 3'}));
-      tooltip(['$'+price(b.lower)+' – $'+price(b.upper),integer.format(b.shares)+' shares · '+pct(b.percent)],layout.profileRight+12,mid<layout.mainMiddle?mid+10:mid-60,205);
+      tooltip(['$'+price(b.lower)+' – $'+price(b.upper),integer.format(b.shares)+' shares · '+pct(b.percent)],layout.priceRight-196,mid<layout.mainMiddle?mid+10:mid-60,205);
       root.setAttribute('aria-valuetext','$'+price(b.lower)+' to $'+price(b.upper)+', '+integer.format(b.shares)+' shares, '+pct(b.percent));
       options.onInspect?.({...b});
     }
@@ -82,19 +82,21 @@
       root.replaceChildren(el('title',{},'Price path and exact volume profile'),el('desc',{},'Exact accepted SIP prints grouped by price and minute. Use arrow keys or pointer inspection.'));
       const bins=profile?.bins||[];if(!bins.length){text(root,width/2,height/2,'No verified price bins available',{'text-anchor':'middle'});return;}
       const timeBars=profile.timeBars?.length?profile.timeBars:(options.synthetic?syntheticBars(profile,options.syntheticClose):[]);
-      const left=12,plotRight=width-(narrow?54:68),top=narrow?47:31,volumeBottom=height-30,volumeTop=height-(narrow?92:106),mainBottom=volumeTop-18,mainMiddle=(top+mainBottom)/2;
+      const left=12,plotRight=width-(narrow?56:88),top=narrow?47:31,volumeBottom=height-30,volumeTop=height-(narrow?92:106),mainBottom=volumeTop-18,mainMiddle=(top+mainBottom)/2;
       const {rows,stride}=grouped(bins,Math.max(22,Math.floor((mainBottom-top)/5.3)));
       const lows=[rows[0].lower,...timeBars.map(b=>b.low)],highs=[rows.at(-1).upper,...timeBars.map(b=>b.high)];
       let low=Math.min(...lows),high=Math.max(...highs);const pad=Math.max(profile.step,(high-low)*.04);low=Math.max(0,low-pad);high+=pad;
-      const y=v=>mainBottom-(v-low)/(high-low)*(mainBottom-top),profileWidth=Math.min(narrow?width*.38:width*.32,285),profileRight=left+profileWidth;
+      const y=v=>mainBottom-(v-low)/(high-low)*(mainBottom-top),profileWidth=Math.min(narrow?width*.23:width*.27,285),profileRight=plotRight,priceRight=plotRight-profileWidth-8;
       const maxShares=Math.max(...rows.map(b=>b.shares));
-      const timeX=i=>timeBars.length<2?profileRight+(plotRight-profileRight)/2:left+i/(timeBars.length-1)*(plotRight-left);
+      const startMs=Date.parse(profile.start),endMs=Date.parse(profile.end);
+      const timeAt=ms=>left+(ms-startMs)/Math.max(1,endMs-startMs)*(priceRight-left);
+      const timeX=i=>timeAt(timeBars[i].ms);
       const maxTimeVolume=Math.max(1,...timeBars.map(b=>b.shares)),volumeY=v=>volumeBottom-v/maxTimeVolume*(volumeBottom-volumeTop);
       const valueArea=profile.complete&&options.showVA!==false?profile.valueArea:null;
 
       if(valueArea)root.append(el('rect',{x:left,y:y(valueArea.upper),width:plotRight-left,height:y(valueArea.lower)-y(valueArea.upper),fill:c.valueBand}));
-      const tick=nice((high-low)/(narrow?5:7)),first=Math.ceil(low/tick),last=Math.floor(high/tick);
-      for(let n=first;n<=last&&n-first<12;n++){const v=n*tick,at=y(v);root.append(el('line',{x1:left,x2:plotRight,y1:at,y2:at,stroke:c.grid,'stroke-dasharray':'2 4'}));text(root,plotRight+7,at,price(v),{fill:c.ink,'font-size':11});}
+      const tick=nice((high-low)/(narrow?5:7)),first=Math.ceil(low/tick),last=Math.floor(high/tick),ticks=[];
+      for(let n=first;n<=last&&n-first<12;n++){const v=n*tick,at=y(v);root.append(el('line',{x1:left,x2:plotRight,y1:at,y2:at,stroke:c.grid,'stroke-dasharray':'2 4'}));ticks.push({at,value:v});}
       root.append(el('line',{x1:left,x2:plotRight,y1:mainBottom,y2:mainBottom,stroke:c.grid}));
       root.append(el('line',{x1:left,x2:plotRight,y1:volumeBottom,y2:volumeBottom,stroke:c.grid}));
       text(root,left,13,options.synthetic?(narrow?'SYNTHETIC · NOT MARKET DATA':'SYNTHETIC PATH · NOT MARKET DATA'):(narrow?'EXACT PRINTS · 1 MIN':'EXACT ACCEPTED PRINTS · 1 MIN'),{fill:options.synthetic?c.peak:c.valueDark,'font-size':10,'font-weight':700,'letter-spacing':'.08em'});
@@ -103,16 +105,16 @@
       for(const b of rows){
         if(!b.shares)continue;const barTop=y(b.upper),barBottom=y(b.lower),h=Math.max(.7,barBottom-barTop-1),w=b.shares/maxShares*profileWidth;
         const inValue=valueArea&&b.lower>=valueArea.lower&&b.upper<=valueArea.upper,isPeak=profile.poc&&b.lower<=profile.poc.lower&&b.upper>profile.poc.lower;
-        root.append(el('rect',{x:left,y:barTop+.5,width:Math.max(.8,w),height:h,fill:isPeak?c.peak:inValue?c.value:c.outside,opacity:isPeak?1:.86}));
-        if(w>42&&h>10)text(root,left+w-4,(barTop+barBottom)/2,pct(b.percent),{'text-anchor':'end','font-size':9,fill:isPeak?'white':c.ink,'font-weight':650});
+        root.append(el('rect',{x:profileRight-Math.max(.8,w),y:barTop+.5,width:Math.max(.8,w),height:h,fill:isPeak?c.peak:inValue?c.value:c.outside,opacity:isPeak?1:.86}));
+        if(w>42&&h>10)text(root,profileRight-4,(barTop+barBottom)/2,pct(b.percent),{'text-anchor':'end','font-size':9,fill:isPeak?'#21100b':c.ink,'font-weight':650});
       }
       if(timeBars.length){
         const line=timeBars.map((b,i)=>(i?'L':'M')+timeX(i)+' '+y(b.close)).join(' ');
         root.append(el('path',{d:line,fill:'none',stroke:c.ink,'stroke-width':narrow?1.35:1.6,'stroke-linejoin':'round','stroke-linecap':'round'}));
-        const barWidth=Math.max(1,Math.min(8,(plotRight-left)/Math.max(1,timeBars.length)*.68));
+        const barWidth=Math.max(1,Math.min(8,(priceRight-left)/Math.max(1,timeBars.length)*.68));
         timeBars.forEach((b,i)=>{const x=timeX(i),fill=b.close>=b.open?c.up:c.down;root.append(el('rect',{x:x-barWidth/2,y:volumeY(b.shares),width:barWidth,height:volumeBottom-volumeY(b.shares),fill,opacity:.72}));});
-        const positions=[0,Math.floor((timeBars.length-1)/2),timeBars.length-1];
-        positions.forEach((i,index)=>{const b=timeBars[i],label=new Date(b.ms).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'});text(root,timeX(i),height-10,label,{fill:c.muted,'font-size':10,'text-anchor':index===0?'start':index===2?'end':'middle'});});
+        const times=[startMs,(startMs+endMs+1)/2,endMs+1];
+        times.forEach((ms,index)=>{const label=new Date(ms).toLocaleTimeString('en-GB',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'});text(root,timeAt(ms),height-10,label,{fill:c.muted,'font-size':10,'text-anchor':index===0?'start':index===2?'end':'middle'});});
         text(root,left,volumeTop-7,'TIME VOLUME',{'font-size':9,'font-weight':700,'letter-spacing':'.08em'});
       }else text(root,(left+plotRight)/2,(top+mainBottom)/2,'Price path unavailable for this legacy profile',{'text-anchor':'middle','font-size':12});
 
@@ -121,11 +123,29 @@
       if(profile.poc)marks.push({value:(profile.poc.lower+profile.poc.upper)/2,label:'POC',color:c.peak,dash:'6 3',strong:true});
       if(options.showVwap!==false&&Number.isFinite(profile.vwap))marks.push({value:profile.vwap,label:'VWAP',color:c.vwap,dash:'2 4'});
       if(timeBars.length)marks.push({value:timeBars.at(-1).close,label:'LAST',color:c.ink,dash:'2 3'});
-      marks.forEach(m=>{const at=y(m.value);if(at<top||at>mainBottom)return;root.append(el('line',{x1:left,x2:plotRight,y1:at,y2:at,stroke:m.color,'stroke-width':m.strong?1.5:1,'stroke-dasharray':m.dash}));
-        const w=m.label==='VWAP'?42:34;root.append(el('rect',{x:plotRight+4,y:at-8,width:w,height:16,rx:3,fill:m.strong?m.color:c.paper,stroke:m.color}));text(root,plotRight+4+w/2,at,m.label,{'text-anchor':'middle','font-size':9,'font-weight':700,fill:m.strong?'white':m.color});});
+      for(const length of [50,200]){
+        const value=profile.movingAverages?.[length];
+        if(options['showMA'+length]!==false&&Number.isFinite(value)){
+          marks.push({value,label:'MA'+length,color:c['ma'+length],dash:'5 5'});
+        }
+      }
+      root.append(el('line',{x1:priceRight+4,x2:priceRight+4,y1:top,y2:mainBottom,stroke:c.grid}));
+      const displayed=marks.filter(mark=>mark.value>=low&&mark.value<=high).sort((a,b)=>b.value-a.value);
+      displayed.forEach((mark,index)=>{
+        const at=y(mark.value),previous=displayed[index-1]?.labelY??top-18;
+        mark.labelY=Math.min(Math.max(at,previous+17),mainBottom-(displayed.length-index-1)*17);
+        root.append(el('line',{x1:left,x2:plotRight,y1:at,y2:at,stroke:mark.color,'stroke-width':mark.strong?1.5:1,'stroke-dasharray':mark.dash}));
+        root.append(el('line',{x1:plotRight,x2:plotRight+5,y1:at,y2:mark.labelY,stroke:mark.color}));
+        const label=mark.label+(mark.strong&&!narrow?' '+price(mark.value):''),w=narrow?48:78;
+        root.append(el('rect',{x:plotRight+5,y:mark.labelY-8,width:w,height:16,rx:3,fill:mark.strong?mark.color:c.paper,stroke:mark.color}));
+        text(root,plotRight+5+w/2,mark.labelY,label,{'text-anchor':'middle','font-size':9,'font-weight':700,fill:mark.strong?'#21100b':mark.color});
+      });
 
+      for(const {at,value} of ticks){
+        if(!displayed.some(mark=>Math.abs(mark.labelY-at)<14))text(root,plotRight+7,at,price(value),{fill:c.ink,'font-size':11});
+      }
       const overlay=el('g',{'pointer-events':'none','aria-hidden':'true'});root.append(overlay);
-      layout={width,height,left,plotRight,profileRight,top,mainBottom,mainMiddle,volumeTop,volumeBottom,y,rows,timeBars,timeX,overlay,low,high};
+      layout={width,height,left,plotRight,profileRight,priceRight,top,mainBottom,mainMiddle,volumeTop,volumeBottom,y,rows,timeBars,timeX,overlay,low,high};
       if(selection.kind==='profile')inspectProfile(Math.min(selection.index,rows.length-1));
       if(selection.kind==='time')inspectTime(Math.min(selection.index,timeBars.length-1));
     }
@@ -133,8 +153,12 @@
     function pointer(event){
       if(!layout)return;const r=root.getBoundingClientRect(),x=(event.clientX-r.left)*layout.width/r.width,y=(event.clientY-r.top)*layout.height/r.height;
       if(y<layout.top||y>layout.volumeBottom||x<layout.left||x>layout.plotRight)return clearInspect();
-      if(x<=layout.profileRight&&y<=layout.mainBottom){const value=layout.high-(y-layout.top)/(layout.mainBottom-layout.top)*(layout.high-layout.low);const i=layout.rows.findIndex(b=>value<b.upper);inspectProfile(i<0?layout.rows.length-1:i);}
-      else if(layout.timeBars.length){const i=Math.max(0,Math.min(layout.timeBars.length-1,Math.round((x-layout.left)/(layout.plotRight-layout.left)*(layout.timeBars.length-1))));inspectTime(i);}
+      if(x>layout.priceRight&&y<=layout.mainBottom){const value=layout.high-(y-layout.top)/(layout.mainBottom-layout.top)*(layout.high-layout.low);const i=layout.rows.findIndex(b=>value<b.upper);inspectProfile(i<0?layout.rows.length-1:i);}
+      else if(layout.timeBars.length){
+        let index=0,distance=Infinity;
+        layout.timeBars.forEach((_,i)=>{const offset=Math.abs(layout.timeX(i)-x);if(offset<distance){distance=offset;index=i;}});
+        inspectTime(index);
+      }
     }
     root.addEventListener('pointermove',pointer);root.addEventListener('pointerdown',pointer);
     root.addEventListener('pointerleave',e=>{if(e.pointerType!=='touch'&&document.activeElement!==root)clearInspect();});

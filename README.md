@@ -171,3 +171,105 @@ route and bundled public dataset in every homepage language:
 ```sh
 REDWOOD_PROFILE_PREVIEW_URL=http://127.0.0.1:8787 node --test tests/volume-profile-worker.test.mjs
 ```
+
+## Member feature access and portfolio analysis
+
+Apply D1 migration `0005_feature_access.sql` before serving this version.
+Set `REDWOOD_ADMIN_USER_IDS` to the comma-separated immutable D1 user IDs of
+explicitly approved existing accounts. A trusted operator can look up an ID by
+email in `users`, then verify the account identity before configuring the ID.
+Accounts otherwise start with all three features disabled. At `/admin/access`,
+an administrator can find an account by email and grant or revoke each feature.
+An optional expiry takes effect at the end of the selected UTC day. The append-only
+event store records the source and actor. Billing remains independent.
+
+For Portfolio, set `REDWOOD_PORTFOLIO_ENCRYPTION_KEY` in the Worker secrets to
+32 random bytes encoded as 64 hex characters. Preserve this key securely across
+releases. Replacing it requires members to re-enter their connections.
+Set a dedicated `REDWOOD_PORTFOLIO_SERVICE_TOKEN` in both the Worker and Redwood
+Research backend and use the compatible backend with `POST /v1/portfolio/analysis`.
+Keep request bodies out of infrastructure logs and disable body capture on the
+private endpoint. The separate website service token remains required for the
+market-analysis endpoints.
+
+At `/portfolio`, each account can save its own IBKR Flex token and XML Activity
+Flex Query ID. Configure the query for one brokerage account and one reporting
+period, with Open Positions set to Summary and the Symbol, Asset Category,
+Currency, Quantity, Position Value and Level of Detail fields included. The
+first successful analysis verifies the connection. A revoked or expired feature
+blocks new analyses and access to saved results. Each account retains its 20 most
+recent successful runs. Disconnecting deletes the encrypted credential and
+cancels any pending result. Existing analyses remain available to their owner
+while authorized. Reports show the statement cutoff and rank USD stock exposures.
+
+### Set or reset the password of an existing website account
+
+The website has no self-service reset screen. A trusted operator with D1
+access can set a password from the terminal after verifying the account's
+identity. First look up the immutable account ID in the intended database.
+Use the exact email and include disabled records in the lookup.
+
+```sql
+SELECT id, email, enabled, google_sub IS NOT NULL AS google_linked
+FROM users
+WHERE email = 'member@example.com' COLLATE NOCASE;
+```
+
+A disabled account requires separate review. If there is no result, check the
+D1 binding of the target Worker and confirm the member is using the same
+environment and sign-in address. Do not create a replacement administrator
+account to work around a missing record.
+
+```sh
+npm run account:password -- --local member@example.com ACCOUNT_ID
+```
+
+The command prompts twice with hidden input, stores a salted password hash,
+and revokes existing website and API sessions for that account. Password entry
+belongs in the terminal. The command matches both email and ID against an
+enabled row and has no effect on feature grants or administrator membership.
+Use `--remote` instead of `--local` only for an approved production password
+change, after confirming that Wrangler can access the correct D1 database.
+The member can then use the website's `/signin` page and complete Turnstile.
+A password change does not deploy the Worker or apply D1 migrations.
+
+### Initialize the first administrator
+
+Choose the target environment before entering a password. The database must be
+empty and have migrations applied, including `0005_feature_access.sql`. Verify
+the intended owner's identity before creating their account. Use an interactive
+terminal and enter the password at the two hidden prompts.
+
+```sh
+npm run account:bootstrap-admin -- --local owner@example.com
+```
+
+This creates the first account only if the database is still empty at insert
+time, then writes its generated user ID into the ignored local `.dev.vars`.
+Restart the local Worker and sign in at `/signin`. Existing local administrator
+settings are protected. If the database insert succeeds and the settings file
+cannot be updated, the command prints the ID needed to finish configuration.
+
+For an approved production bootstrap, use `--remote` with the exact same
+command after confirming Wrangler access to the intended D1 database. It
+creates the account and prints the generated ID. Set that ID as
+`REDWOOD_ADMIN_USER_IDS` in the target Worker configuration to enable the role.
+That configuration change must take effect on the Worker version serving the
+site. The bootstrap command only writes the database account in remote mode
+and does not deploy a Worker or change its settings.
+
+### Run the built loopback preview
+
+With local D1 migrations and the local research settings in `.dev.vars`, set
+`REDWOOD_LOCAL_PREVIEW=1` in that ignored file. Then run:
+
+```sh
+npm run build
+npm run preview:local
+```
+
+Open `http://localhost:8811/signin`. The preview reuses the local D1 state and
+sets the local request origin explicitly so the production custom domain does
+not interfere with local login. The local preview flag only applies to loopback
+requests. The production configuration uses its HTTPS research upstream and
+production Turnstile credentials.

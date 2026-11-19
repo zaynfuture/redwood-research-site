@@ -3,9 +3,12 @@ import { test } from 'node:test';
 
 // Point this smoke test at the built Wrangler preview so the real RSC transform is exercised.
 const origin = process.env.REDWOOD_PROFILE_PREVIEW_URL;
-test('Worker serves the public volume profile page with the requested language', {skip: !origin}, async () => {
+const authorizedCookie = process.env.REDWOOD_PROFILE_PREVIEW_COOKIE;
+void test('Worker serves the authorized volume profile page with the requested language', {
+  skip: !origin || !authorizedCookie,
+}, async () => {
   const endpoint = new URL('/volume-profile?lang=zh-CN', origin);
-  const response = await fetch(endpoint);
+  const response = await fetch(endpoint, { headers: { Cookie: authorizedCookie } });
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('content-language'), 'zh-CN');
   const html = await response.text();

@@ -112,16 +112,14 @@ export async function createEmailAccount(email: string, passwordHash: string, pa
   return getAccountUserById(id);
 }
 
-export async function findOrCreateGoogleAccount(input: { email: string; sub: string; displayName: string | null }): Promise<AccountUser> {
+export async function findOrCreateGoogleAccount(input: { email: string; sub: string; displayName: string | null }): Promise<AccountUser | null> {
   const existing = await env.DB.prepare(
-    `SELECT id, email, display_name, plan, subscription_status, stripe_customer_id, current_period_end
-     FROM users WHERE google_sub = ? OR email = ? LIMIT 1`,
-  ).bind(input.sub, input.email).first<AccountUserRow>();
+    'SELECT id FROM users WHERE google_sub = ? AND enabled = 1',
+  ).bind(input.sub).first<{ id: string }>();
   if (existing) {
-    await env.DB.prepare(
-      'UPDATE users SET google_sub = COALESCE(google_sub, ?), display_name = COALESCE(?, display_name) WHERE id = ?',
-    ).bind(input.sub, input.displayName, existing.id).run();
-    return { ...accountUser(existing), displayName: input.displayName ?? existing.display_name };
+    await env.DB.prepare('UPDATE users SET display_name = COALESCE(?, display_name) WHERE id = ? AND enabled = 1')
+      .bind(input.displayName, existing.id).run();
+    return getAccountUserById(existing.id);
   }
 
   const salt = crypto.randomUUID().replaceAll('-', '');
@@ -131,9 +129,15 @@ export async function findOrCreateGoogleAccount(input: { email: string; sub: str
     `INSERT INTO users
      (id, email, password_hash, password_salt, password_iterations, enabled, daily_limit, created_at,
       display_name, google_sub, plan, subscription_status)
-     VALUES (?, ?, ?, ?, 100000, 1, 100, ?, ?, ?, 'free', 'inactive')`,
+     VALUES (?, ?, ?, ?, 100000, 1, 100, ?, ?, ?, 'free', 'inactive')
+     ON CONFLICT DO NOTHING`,
   ).bind(id, input.email, unusablePasswordHash, salt, new Date().toISOString(), input.displayName, input.sub).run();
-  return (await getAccountUserById(id))!;
+
+  // A matching email never links an existing account to a new OAuth subject.
+  const account = await env.DB.prepare(
+    'SELECT id FROM users WHERE google_sub = ? AND enabled = 1',
+  ).bind(input.sub).first<{ id: string }>();
+  return account ? getAccountUserById(account.id) : null;
 }
 
 export async function getAccountUserById(id: string): Promise<AccountUser | null> {

@@ -226,6 +226,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
         </p>
       ) : (
         <p className="auth-switch">
+          <Link href="/signup">{copy.register}</Link>{' · '}
           <a href="https://www.linkedin.com/company/redwoodresearch-cortexhubs/?viewAsMember=true">
             {copy.beta}
           </a>

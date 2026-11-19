@@ -93,3 +93,31 @@ test('validates per-symbol bar timestamps and never attaches an older session cl
   raw.metrics.DEMO.source_bar_at='2026-06-14T04:00:00Z';
   assert.throws(()=>ProfileModel.parse(raw));
 });
+
+test('retains an early calendar close and only licensed session-matched moving averages', () => {
+  const profile = sample();
+  const open = sessionDate + 'T13:30:00Z';
+  const close = sessionDate + 'T17:00:00Z';
+  const last = sessionDate + 'T16:59:59.999999999Z';
+  Object.assign(profile, {
+    origin: 'alpaca_market_data', network_checked: true,
+    rights_decision: 'licensed_redistribution', redistribution_allowed: true,
+    delivery_rights_basis: 'operator_attested_provider_redistribution_rights',
+    start: open, end: last, source_first_at: open, source_last_at: last,
+    session_schedule: {
+      basis: 'alpaca_us_market_calendar', session_date: sessionDate,
+      start: open, end: last, open, close,
+    },
+    daily_moving_averages: {
+      status: 'available', source: 'Alpaca SIP daily bars',
+      price_basis: 'split_adjusted', as_of: sessionDate, values: {'50': 10.25},
+    },
+  });
+  profile.time_bars[0].start = open;
+  profile.analysis.reference.at = last;
+  assert.equal(parseProfile(profile).window, 'regular-session');
+  assert.equal(parseProfile(profile).scheduledClose, close);
+  assert.deepEqual(parseProfile(profile).movingAverages, {'50': 10.25});
+  profile.daily_moving_averages.as_of = '2026-06-12';
+  assert.deepEqual(parseProfile(profile).movingAverages, {});
+});

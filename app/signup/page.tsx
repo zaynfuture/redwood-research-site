@@ -9,7 +9,7 @@ export default function SignUpPage() {
   const copy = authCopy[useLocale().locale];
   return (
     <main className="auth-page">
-      <Link href="/" className="auth-brand"><span className="brand-mark"><span /></span><strong>REDWOOD</strong></Link>
+      <Link href="/" className="auth-brand"><span className="brand-mark"><span /></span><strong>REDWOOD RESEARCH</strong></Link>
       <LanguageSelect />
       <section>
         <span className="section-index">{copy.register}</span>

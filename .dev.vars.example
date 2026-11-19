@@ -15,3 +15,11 @@ GOOGLE_CLIENT_SECRET=replace-with-google-oauth-client-secret
 STRIPE_SECRET_KEY=sk_test_replace_me
 STRIPE_WEBHOOK_SECRET=whsec_replace_me
 STRIPE_INDIVIDUAL_PRICE_ID=price_replace_me
+
+# Website feature access and private portfolio analysis.
+# Set this to the internal account ID of the explicitly approved administrator.
+REDWOOD_ADMIN_USER_IDS=
+# 32 random bytes encoded as 64 hexadecimal characters. Preserve across restarts.
+REDWOOD_PORTFOLIO_ENCRYPTION_KEY=
+# A dedicated random secret shared only with the private Redwood Research backend.
+REDWOOD_PORTFOLIO_SERVICE_TOKEN=

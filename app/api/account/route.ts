@@ -1,3 +1,4 @@
+import { featureAccess, isAdmin } from '@/lib/auth/features';
 import { requireAccountUser, error, json } from '@/lib/api/http';
 import { chatEnabled, usageMonth } from '@/lib/auth/account';
 import { monthlyChatQuota } from '@/lib/api/store';
@@ -9,5 +10,5 @@ export async function GET(request: Request): Promise<Response> {
   if (!user) return error('unauthorized', 'Sign in required.', 401);
   const canChat = chatEnabled(user);
   const quota = canChat ? await monthlyChatQuota(user.id, usageMonth()) : { limit: 1000, used: 0, remaining: 0 };
-  return json({ user, can_chat: canChat, quota, usage_month: usageMonth() });
+  return json({ user, admin: isAdmin(user), features: await featureAccess(user), can_chat: canChat, quota, usage_month: usageMonth() });
 }

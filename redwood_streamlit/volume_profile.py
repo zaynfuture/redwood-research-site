@@ -26,6 +26,7 @@ def build_volume_profile_html(initial: object | None = None, *, language: str = 
     """Render a complete HTML document; the hosted route always uses the checked-in demo."""
     template = (_ASSETS / "index.html").read_text(encoding="utf-8")
     css = (_ASSETS / "style.css").read_text(encoding="utf-8")
+    css += "\n" + (_ASSETS / "site-header.css").read_text(encoding="utf-8")
     scripts = "\n".join(
         "<script>\n" + (_ASSETS / filename).read_text(encoding="utf-8") + "\n</script>"
         for filename in _SCRIPTS

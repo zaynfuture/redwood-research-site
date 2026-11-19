@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light"><title>Volume Profile · Redwood Research</title>
+<meta name="color-scheme" content="dark"><title>Volume Profile · Redwood Research</title>
 <!-- PROFILE_STYLE -->
 </head>
 <body>
-<header class="mast"><div class="mast-inner">
-<a class="brand" href="/" aria-label="Redwood Research"><span class="brand-mark"><span></span></span><strong>REDWOOD</strong></a>
-<nav class="site-nav" aria-label="Primary"><a href="/#framework" data-t="navFramework"></a><a href="/#capabilities" data-t="navCapabilities"></a><a href="/" data-t="navHome"></a></nav>
-<div class="mast-right"><select id="profile-language"><option value="en" lang="en">English</option><option value="zh-CN" lang="zh-CN">&#31616;&#20307;&#20013;&#25991;</option><option value="zh-TW" lang="zh-TW">&#32321;&#39636;&#20013;&#25991;</option></select><span class="local-status"><i></i><span data-t="local"></span></span><button type="button" id="refresh" class="import"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 11a8 8 0 1 0 1 5m0-5v-6m0 6h-6"/></svg><span data-t="refresh"></span></button></div>
+<header class="site-header"><div class="site-header-inner">
+<a class="site-header-brand" href="/" aria-label="Redwood Research home"><span class="site-header-mark" aria-hidden="true"><span></span></span><span>REDWOOD RESEARCH</span></a>
+<nav class="site-header-links" aria-label="Main navigation"><a href="/#framework" data-t="navFramework"></a><a href="/#capabilities" data-t="navCapabilities"></a><a href="/#cases" data-t="navCases"></a><a href="/#principles" data-t="navPrinciples"></a></nav>
+<div class="site-header-actions"><select class="site-header-select" id="profile-language" aria-label="Language"><option value="en" lang="en">English</option><option value="zh-CN" lang="zh-CN">&#31616;&#20307;&#20013;&#25991;</option><option value="zh-TW" lang="zh-TW">&#32321;&#39636;&#20013;&#25991;</option></select><button type="button" id="refresh" class="site-header-control"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 11a8 8 0 1 0 1 5m0-5v-6m0 6h-6"/></svg><span id="refresh-label" data-t="refresh"></span></button></div>
 </div></header>
 <main>
-<section class="page-heading"><div><span class="section-index" data-t="productKicker"></span><h1><span data-t="titleLead"></span> <em data-t="titleAccent"></em></h1><p data-t="subtitle"></p><a class="chart-jump" href="#profile-plot" data-t="chartTitle"></a></div>
+<section class="page-heading"><div><span class="section-index" data-t="productKicker"></span><h1><span data-t="titleLead"></span> <em data-t="titleAccent"></em></h1><p data-t="subtitle"></p><a class="chart-jump" href="#profile-plot" data-t="chartTitle"></a><a class="chart-jump" href="/market-sentiment" data-t="navSentiment"></a></div>
 <div class="date-control"><label for="date" data-t="sessionDate"></label><select id="date"></select></div></section>
 <section class="guide" aria-label="Workflow"><article><span>01</span><div><strong data-t="guideSearchTitle"></strong><p data-t="guideSearch"></p></div></article><article><span>02</span><div><strong data-t="guideVerifyTitle"></strong><p data-t="guideVerify"></p></div></article><article><span>03</span><div><strong data-t="guideDecideTitle"></strong><p data-t="guideDecide"></p></div></article></section>
 <div class="notice" id="notice" role="status" hidden></div>
@@ -24,8 +24,8 @@
 <section class="panel" aria-label="Volume profile"><div class="stock-head"><div><div class="stock-line"><h2 id="ticker">—</h2><span id="company"></span></div><div class="stock-sub"><span id="badge"></span><span id="timing"></span></div></div><div class="window-controls" id="windows"></div></div>
 <div id="profile-details"><div class="kpis" id="kpis"></div>
 <section id="profile-plot" class="plot-section" tabindex="-1"><div class="plot-tools"><div><h3 data-t="chartTitle"></h3><span id="bin-step" class="plot-meta"></span></div><div id="units" class="unit-control"></div></div>
-<div class="legend" id="legend"></div><div id="chart"></div><div class="plot-foot"><span id="inspect"></span><button type="button" id="open-table" data-t="table"></button></div></section></div>
-<div id="unavailable" class="unavailable" hidden><span class="section-index" data-t="directoryResult"></span><h3 id="unavailable-title" data-t="noProfileTitle"></h3><p id="unavailable-copy" data-t="noProfileCopy"></p><button type="button" id="fetch-empty" class="primary-action" data-t="fetchProfile"></button><small data-t="realtimeBoundary"></small></div>
+<div class="legend" id="legend"></div><div id="daily-studies" class="daily-studies"></div><div id="chart"></div><div class="plot-foot"><span id="inspect"></span><button type="button" id="open-table" data-t="table"></button></div></section></div>
+<button type="button" id="return-demo" class="return-demo" data-t="restore" hidden></button><div id="unavailable" class="unavailable" hidden><span class="section-index" data-t="directoryResult"></span><h3 id="unavailable-title" data-t="noProfileTitle"></h3><p id="unavailable-copy" data-t="noProfileCopy"></p><button type="button" id="fetch-empty" class="primary-action" data-t="fetchProfile"></button><small data-t="realtimeBoundary"></small></div>
 </section></div>
 <section id="insight" class="insight"><div class="insight-head"><h2 data-t="shape"></h2><span id="close-ref"></span></div><div id="insight-body"></div></section>
 <section id="audit" class="audit"><div class="audit-heading"><div><span class="section-index" data-t="auditKicker"></span><h2 data-t="auditTitle"></h2></div><span id="audit-verdict" class="audit-verdict"></span></div><div class="audit-grid"><article><span data-t="auditOrigin"></span><strong id="audit-source"></strong><small id="audit-rights"></small></article><article><span data-t="auditTime"></span><strong id="audit-asof"></strong><small id="audit-window"></small></article><article class="audit-checks"><span data-t="auditChecks"></span><ul id="audit-list"></ul></article></div><p class="audit-caveat" id="audit-caveat"></p></section>

@@ -19,7 +19,7 @@ export async function POST(request: Request): Promise<Response> {
   if (remaining === null) return error('quota_exhausted', 'Daily API quota exhausted.', 429);
 
   try {
-    const result = await runPrivateTool(body.input.trim(), requestId);
+    const result = await runPrivateTool(request, body.input.trim(), requestId);
     return json({ result, remaining, request_id: requestId });
   } catch (caught) {
     console.error(JSON.stringify({ event: 'redwood_api_upstream_error', request_id: requestId,

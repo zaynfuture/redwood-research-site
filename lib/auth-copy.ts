@@ -2,8 +2,8 @@ export const authCopy = {
   en: {
     member: 'Member access', register: 'Create account', welcome: 'Welcome back.',
     begin: 'Begin with evidence.', loginIntro: 'Sign in to your private research workspace and chatbot.',
-    registerIntro: 'Create an account to prepare for private-beta or enterprise access.',
-    disclosure: 'Redwood provides research support. Orders are never executed here.',
+    registerIntro: 'Create an account. Ask an administrator to enable the research tools you need.',
+    disclosure: 'Redwood Research provides research support. Orders are never executed here.',
     registerDisclosure: 'Research output is informational and does not constitute investment advice.',
     signIn: 'Sign in', email: 'Email', password: 'Password', length: 'At least 12 characters',
     verification: 'Human verification', verificationUnavailable: 'Human verification is temporarily unavailable.',
@@ -16,8 +16,8 @@ export const authCopy = {
   'zh-CN': {
     member: '会员访问', register: '创建账户', welcome: '欢迎回来。',
     begin: '从证据出发。', loginIntro: '登录你的私有研究工作区和聊天助手。',
-    registerIntro: '创建账户，为申请内测或企业服务做好准备。',
-    disclosure: 'Redwood 提供研究支持，不执行交易委托。',
+    registerIntro: '创建账户后，可联系管理员开通所需的研究功能。',
+    disclosure: 'Redwood Research 提供研究支持，不执行交易委托。',
     registerDisclosure: '研究结果仅供参考，不构成投资建议。',
     signIn: '登录', email: '电子邮箱', password: '密码', length: '至少 12 个字符',
     verification: '人机验证', verificationUnavailable: '人机验证暂不可用。',
@@ -28,8 +28,8 @@ export const authCopy = {
   'zh-TW': {
     member: '會員存取', register: '建立帳戶', welcome: '歡迎回來。',
     begin: '從證據出發。', loginIntro: '登入你的私人研究工作區與聊天助理。',
-    registerIntro: '建立帳戶，為申請內測或企業服務做好準備。',
-    disclosure: 'Redwood 提供研究支援，不執行交易委託。',
+    registerIntro: '建立帳戶後，可聯絡管理員開通所需的研究功能。',
+    disclosure: 'Redwood Research 提供研究支援，不執行交易委託。',
     registerDisclosure: '研究結果僅供參考，不構成投資建議。',
     signIn: '登入', email: '電子郵件', password: '密碼', length: '至少 12 個字元',
     verification: '人機驗證', verificationUnavailable: '人機驗證暫時無法使用。',

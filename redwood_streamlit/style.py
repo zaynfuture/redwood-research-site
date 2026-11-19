@@ -1,4 +1,4 @@
-"""Shared Redwood Streamlit presentation."""
+"""Shared Redwood Research Streamlit presentation."""
 
 import streamlit as st
 
@@ -140,7 +140,7 @@ def apply_style() -> None:
 
 
 def brand() -> None:
-    st.markdown("**REDWOOD**")
+    st.markdown("**REDWOOD RESEARCH**")
 
 
 def footer(copy: str = "© 2026 Cortex Hubs · Research support only · No order execution") -> None:

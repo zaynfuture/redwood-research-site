@@ -1,3 +1,4 @@
+import { requireFeature } from '@/lib/auth/features';
 import { runPrivateMarketSentiment } from '@/lib/api/backend';
 import { resolveLocale } from '@/lib/locale';
 
@@ -10,10 +11,14 @@ const unavailable = {
 };
 
 export async function GET(request: Request): Promise<Response> {
+  const admission = await requireFeature(request, 'market_sentiment');
+  if (admission instanceof Response) return admission;
   const locale = resolveLocale(new URL(request.url).searchParams.get('lang'));
   const headers = { 'cache-control': 'no-store', 'content-language': locale, 'x-content-type-options': 'nosniff' };
   try {
-    const result = await runPrivateMarketSentiment(locale, crypto.randomUUID());
+    const result = await runPrivateMarketSentiment(request, locale, crypto.randomUUID());
+    const stillAllowed = await requireFeature(request, 'market_sentiment');
+    if (stillAllowed instanceof Response) return stillAllowed;
     return Response.json(result, { headers });
   } catch {
     return Response.json(

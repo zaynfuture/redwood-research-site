@@ -27,11 +27,11 @@ export function useLocale() {
 const names = { en: 'English', 'zh-CN': '简体中文', 'zh-TW': '繁體中文' };
 const labels = { en: 'Language', 'zh-CN': '语言', 'zh-TW': '語言' };
 
-export function LanguageSelect() {
+export function LanguageSelect({ header = false }: { header?: boolean }) {
   const { locale, setLocale } = useLocale();
   return (
-    <span className="locale-picker">
-      <select value={locale} aria-label={labels[locale]} onChange={event => setLocale(resolveLocale(event.target.value))}>
+    <span className={header ? undefined : "locale-picker"}>
+      <select className={header ? "site-header-select" : undefined} value={locale} aria-label={labels[locale]} onChange={event => setLocale(resolveLocale(event.target.value))}>
         {locales.map(tag => <option key={tag} value={tag} lang={tag}>{names[tag]}</option>)}
       </select>
     </span>

@@ -29,7 +29,7 @@ export async function verifyGoogleIdToken(idToken: string, expectedNonce: string
 
   const response = await fetch('https://www.googleapis.com/oauth2/v3/certs', {
     headers: { accept: 'application/json' },
-    cf: { cacheTtl: 3600, cacheEverything: true },
+    cache: 'no-store',
   });
   if (!response.ok) return null;
   const { keys } = await response.json<{ keys: Array<JsonWebKey & { kid?: string; kty?: string }> }>();

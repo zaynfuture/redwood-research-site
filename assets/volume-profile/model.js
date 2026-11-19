@@ -94,10 +94,25 @@
     const open = localTime(start);
     const finish = localTime(end);
     let window = 'custom';
+    const schedule = doc.session_schedule;
+    const validSchedule = licensedDelivery && schedule?.basis === 'alpaca_us_market_calendar' &&
+      schedule.session_date === finish.date && schedule.start === doc.start && schedule.end === doc.end &&
+      localTime(timestamp(schedule.open)).time === '09:30:00' &&
+      timestamp(schedule.close).ns === end.ns + 1n;
     if (doc.session === 'regular_clock' && open.date === finish.date && start.fraction === '000000000' &&
-        finish.time === '15:59:59' && end.fraction === '999999999') {
-      if (open.time === '15:30:00') window = 'closing-half-hour';
+        end.fraction === '999999999' && (finish.time === '15:59:59' || validSchedule)) {
       if (open.time === '09:30:00') window = 'regular-session';
+      else if ((validSchedule && end.ns + 1n - start.ns === 1800000000000n) ||
+               (open.time === '15:30:00' && finish.time === '15:59:59')) window = 'closing-half-hour';
+    }
+    const studies = doc.daily_moving_averages;
+    const movingAverages = {};
+    if (licensedDelivery && studies?.status === 'available' && studies.as_of === finish.date &&
+        studies.price_basis === 'split_adjusted' && studies.source === 'Alpaca SIP daily bars') {
+      for (const length of [50, 200]) {
+        const value = studies.values?.[length];
+        if (typeof value === 'number' && Number.isFinite(value) && value > 0) movingAverages[length] = value;
+      }
     }
     const step = number(doc.price_step, 'bin size', 0.000001, 1000000);
     const unit = priceUnits(doc.price_step);
@@ -213,7 +228,8 @@
       provider: doc.provider, feed: doc.feed, origin: doc.origin, networkChecked, asOf: doc.as_of,
       sourceFirstAt: doc.source_first_at || null, sourceLastAt: doc.source_last_at || null,
       rightsDecision: doc.rights_decision, paginationComplete: doc.pagination_complete === true, timeBars,
-      dataQualityValid: doc.data_quality_valid === true, analysis };
+      dataQualityValid: doc.data_quality_valid === true, analysis, movingAverages,
+      dailyStudyStatus: studies?.status, scheduledClose: validSchedule ? schedule.close : null };
   }
 
   function contextRow(ticker, metrics, date, sourceId) {

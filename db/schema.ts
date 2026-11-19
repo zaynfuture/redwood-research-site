@@ -9,5 +9,8 @@ export const schema = {
   monthlyChatUsage: 'monthly_chat_usage',
   stripeEvents: 'stripe_events',
   monthlyResearch: 'monthly_research',
+  featureAccessEvents: 'feature_access_events',
+  portfolioConnections: 'portfolio_connections',
+  portfolioRuns: 'portfolio_runs',
   enterpriseInquiries: 'enterprise_inquiries',
 } as const;

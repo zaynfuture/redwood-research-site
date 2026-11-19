@@ -4,10 +4,10 @@ import { ArrowRight, Blocks, BookOpenText, Bot, CheckCircle2, Database, LockKeyh
 import { EnterpriseInquiryForm } from '@/components/enterprise-inquiry-form';
 
 export const metadata: Metadata = {
-  title: 'Redwood Enterprise - 深度投研系统集成',
+  title: 'Redwood Research Enterprise - 深度投研系统集成',
   description: '面向企业的股票系统、内部文档、私有知识与 IM 工作流深度集成。具体费率详细咨询。',
-  openGraph: { title: 'Redwood Enterprise - 深度投研系统集成', description: '股票系统、内部文档与 IM 工作流深度集成。', images: [] },
-  twitter: { card: 'summary', title: 'Redwood Enterprise - 深度投研系统集成', description: '股票系统、内部文档与 IM 工作流深度集成。', images: [] },
+  openGraph: { title: 'Redwood Research Enterprise - 深度投研系统集成', description: '股票系统、内部文档与 IM 工作流深度集成。', images: [] },
+  twitter: { card: 'summary', title: 'Redwood Research Enterprise - 深度投研系统集成', description: '股票系统、内部文档与 IM 工作流深度集成。', images: [] },
 };
 
 const integrations = [
@@ -48,7 +48,7 @@ export default function EnterprisePage() {
   return (
     <main className="enterprise-page">
       <nav className="enterprise-nav">
-        <Link href="/" className="auth-brand"><span className="brand-mark"><span /></span><strong>REDWOOD</strong></Link>
+        <Link href="/" className="auth-brand"><span className="brand-mark"><span /></span><strong>REDWOOD RESEARCH</strong></Link>
         <div><Link href="/pricing" className="button button-ghost">会员方案</Link><a href="#enterprise-inquiry" className="button button-primary">详细咨询 <ArrowRight size={16} /></a></div>
       </nav>
 
@@ -58,7 +58,7 @@ export default function EnterprisePage() {
           <h1>让研究系统适应你的<br /><span className="heading-accent text-primary">组织与边界。</span></h1>
         </div>
         <div className="enterprise-intro">
-          <p>Redwood 企业版围绕现有股票系统、内部文档和协作渠道进行深度定制，而不是要求团队迁移到一套固定流程。</p>
+          <p>Redwood Research 企业版围绕现有股票系统、内部文档和协作渠道进行深度定制，而不是要求团队迁移到一套固定流程。</p>
           <div><ShieldCheck size={16} />只读优先 · 权限最小化 · 全程可审计</div>
         </div>
       </header>

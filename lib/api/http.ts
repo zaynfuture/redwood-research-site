@@ -29,7 +29,21 @@ export async function boundedJson(request: Request, maxBytes = 16_384): Promise<
   const contentLength = Number(request.headers.get('content-length') ?? '0');
   if (contentLength > maxBytes) return null;
   try {
-    const body: unknown = await request.json();
+    const reader = request.body?.getReader();
+    if (!reader) return null;
+    const buffer = new Uint8Array(maxBytes);
+    let length = 0;
+    while (true) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      if (length + chunk.value.byteLength > maxBytes) {
+        await reader.cancel();
+        return null;
+      }
+      buffer.set(chunk.value, length);
+      length += chunk.value.byteLength;
+    }
+    const body: unknown = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(buffer.subarray(0, length)));
     return body !== null && typeof body === 'object' && !Array.isArray(body) ? body as Record<string, unknown> : null;
   } catch {
     return null;

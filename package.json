@@ -9,9 +9,12 @@
     "dev": "vinext dev",
     "build": "vinext build",
     "start": "wrangler dev",
+    "preview:local": "wrangler dev --local --config dist/server/wrangler.json --persist-to .wrangler/state --local-upstream localhost --ip localhost --port 8811",
     "deploy": "npm run build && wrangler deploy",
     "db:migrate:local": "wrangler d1 migrations apply redwood-api-gateway --local",
     "db:migrate:remote": "wrangler d1 migrations apply redwood-api-gateway --remote",
+    "account:bootstrap-admin": "node --experimental-strip-types scripts/bootstrap-admin.mjs",
+    "account:password": "node --experimental-strip-types scripts/reset-account-password.mjs",
     "api:user": "node scripts/create-api-user.mjs",
     "lint": "oxlint",
     "format": "oxfmt"

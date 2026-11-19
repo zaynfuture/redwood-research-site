@@ -1,3 +1,4 @@
+import { isAdmin } from '@/lib/auth/features';
 import { createAccountSession } from '@/lib/api/store';
 import { randomHex, sessionCookie } from '@/lib/api/security';
 
@@ -16,8 +17,8 @@ export async function signedInResponse(userId: string, data: Record<string, unkn
   });
 }
 
-export function chatEnabled(user: { plan: string; subscriptionStatus: string }): boolean {
-  return user.plan === 'legacy' || user.plan === 'enterprise' ||
+export function chatEnabled(user: { id: string; plan: string; subscriptionStatus: string }): boolean {
+  return isAdmin(user) || user.plan === 'legacy' || user.plan === 'enterprise' ||
     (user.plan === 'individual' && ['active', 'trialing'].includes(user.subscriptionStatus));
 }
 

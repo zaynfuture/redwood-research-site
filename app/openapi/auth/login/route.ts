@@ -25,8 +25,8 @@ export async function POST(request: Request): Promise<Response> {
   if (attempts === null) {
     return error('too_many_attempts', 'Too many login attempts. Try again later.', 429);
   }
-  if (attempts > 3 && !(await verifyTurnstile(body?.turnstile_token, source))) {
-    const siteKey = turnstileSiteKey();
+  if (attempts > 3 && !(await verifyTurnstile(request, body?.turnstile_token, source))) {
+    const siteKey = turnstileSiteKey(request);
     if (!siteKey) return error('captcha_unavailable', 'Human verification is temporarily unavailable.', 503);
     return json({
       error: { code: 'captcha_required', message: 'Complete human verification before retrying.' },

@@ -1,312 +1,154 @@
-/* Historical price-by-volume plot. Inputs are normalized local ProfileModel objects. */
+/* Aligned exact-print price path, volume-at-price profile, and time-volume chart. */
 (() => {
-  "use strict";
+  'use strict';
 
-  const NS = "http://www.w3.org/2000/svg";
-  const instances = new WeakMap();
-  const ink = "#34322f";
-  const colors = {
-    peak: "#a63d2c", value: "#c98273", outside: "#d8d2c9",
-    valueBand: "#f7e9e5", grid: "#e4dfd7", muted: "#66645e",
-    volumeLine: "#aaa39a", vwap: "#bd6d4e", highlight: "#7f3125",
-  };
-  const copy = {
-    en: { chart: "Price-by-volume distribution", price: "Price · USD", shares: "Volume (shares)",
-      percent: "Share of volume (%)", empty: "No price bins available", close: "Close",
-      instructions: "Use the up and down arrow keys to inspect price bins.", bin: "price bin",
-      native: "original bins", partial: "Partial volume", perRow: "original bins per bar" },
-    zh: { chart: "按价格分布的成交量", price: "价格 · USD", shares: "成交量（股）",
-      percent: "成交量占比（%）", empty: "暂无可展示的价格档", close: "收盘",
-      instructions: "使用上下方向键逐档查看成交量。", bin: "价格档",
-      native: "个原始价格档", partial: "部分成交量", perRow: "个原始价格档合为一条" },
-    "zh-TW": { chart: "按價格分布的成交量", price: "價格 · USD", shares: "成交量（股）",
-      percent: "成交量占比（%）", empty: "暫無可顯示的價格檔", close: "收盤",
-      instructions: "使用上下方向鍵逐檔查看成交量。", bin: "價格檔",
-      native: "個原始價格檔", partial: "部分成交量", perRow: "個原始價格檔合為一條" },
-  };
+  const NS='http://www.w3.org/2000/svg',instances=new WeakMap();
+  const c={ink:'#2d2c29',muted:'#6d6a64',grid:'#e6e1d9',paper:'#fffdf9',outside:'#d5d0c8',
+    value:'#78a99f',valueDark:'#4e887c',valueBand:'#eaf3f0',peak:'#a63d2c',vwap:'#bd6d4e',
+    up:'#6e9d8d',down:'#c67c70',cross:'#7b7770'};
 
-  function svgNode(name, attributes = {}, text) {
-    const node = document.createElementNS(NS, name);
-    for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, String(value));
-    if (text !== undefined) node.textContent = text;
-    return node;
+  const el=(name,attrs={},text)=>{const n=document.createElementNS(NS,name);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,String(v));if(text!==undefined)n.textContent=text;return n;};
+  const text=(parent,x,y,value,attrs={})=>{const n=el('text',{x,y,fill:c.muted,'font-size':12,'dominant-baseline':'middle',...attrs},value);parent.append(n);return n;};
+  const nice=raw=>{if(!(raw>0))return 1;const f=10**Math.floor(Math.log10(raw)),u=raw/f;return(u<=1?1:u<=2?2:u<=2.5?2.5:u<=5?5:10)*f;};
+
+  function grouped(bins,maximum){
+    const stride=Math.max(1,Math.ceil(bins.length/maximum)),rows=[];
+    for(let i=0;i<bins.length;i+=stride){const slice=bins.slice(i,i+stride);rows.push({lower:slice[0].lower,upper:slice.at(-1).upper,
+      shares:slice.reduce((n,b)=>n+b.shares,0),percent:slice.reduce((n,b)=>n+b.percent,0),binCount:slice.length});}
+    return{rows,stride};
   }
 
-  function label(parent, x, y, text, props = {}) {
-    const node = svgNode("text", { x, y, fill: colors.muted, "font-size": 12,
-      "dominant-baseline": "middle", ...props }, text);
-    parent.append(node);
-    return node;
+  function syntheticBars(profile,targetClose){
+    const bins=profile.bins.filter(b=>b.shares>0);if(!bins.length)return[];
+    const low=bins[0].lower,high=bins.at(-1).upper,span=high-low,start=Date.parse(profile.start),end=Date.parse(profile.end);
+    const count=Math.max(2,Math.min(390,Math.round((end-start)/60000)||36));
+    const weights=Array.from({length:count},(_,i)=>1.2+(1+Math.sin(i*.19))*.55+(i>count*.88?2.2:0));
+    const allocate=total=>{const sum=weights.reduce((n,v)=>n+v,0),values=weights.map(v=>Math.floor(total*v/sum));let rest=total-values.reduce((n,v)=>n+v,0);for(let i=values.length-1;rest>0;i=(i-1+values.length)%values.length){values[i]++;rest--;}return values;};
+    const shares=allocate(profile.totalShares),trades=allocate(profile.accepted||0);let previous=low+span*.18;
+    return Array.from({length:count},(_,i)=>{
+      const trend=i/(count-1),wave=Math.sin(i*.11)*.07+Math.sin(i*.029)*.04;
+      let close=Math.max(low+span*.04,Math.min(high-span*.04,low+span*(.17+trend*.68+wave)));
+      if(i===count-1&&Number.isFinite(targetClose))close=Math.max(low,Math.min(high,targetClose));
+      const open=previous,barLow=Math.min(open,close)-span*.006,barHigh=Math.max(open,close)+span*.006;
+      previous=close;
+      return{start:new Date(start+i*60000).toISOString(),ms:start+i*60000,open,high:Math.min(high,barHigh),
+        low:Math.max(low,barLow),close,shares:shares[i],trades:trades[i],vwap:(open+close)/2};
+    });
   }
 
-  function groupBins(bins, maximum) {
-    const stride = Math.max(1, Math.ceil(bins.length / maximum));
-    const groups = [];
-    for (let start = 0; start < bins.length; start += stride) {
-      const stop = Math.min(bins.length, start + stride);
-      let shares = 0;
-      let percent = 0;
-      for (let i = start; i < stop; i++) {
-        shares += bins[i].shares;
-        percent += bins[i].percent;
-      }
-      groups.push({ lower: bins[start].lower, upper: bins[stop - 1].upper,
-        binCount: stop - start, shares, percent });
-    }
-    return { groups, stride };
-  }
-
-  function niceStep(raw) {
-    if (!(raw > 0)) return 1;
-    const factor = 10 ** Math.floor(Math.log10(raw));
-    const unit = raw / factor;
-    return (unit <= 1 ? 1 : unit <= 2 ? 2 : unit <= 2.5 ? 2.5 : unit <= 5 ? 5 : 10) * factor;
-  }
-
-  function render(host, profile, options = {}) {
+  function render(host,profile,options={}){
     instances.get(host)?.();
-    const language = (options.lang || document.documentElement.lang || "en").toLowerCase();
-    const zh = language.startsWith("zh");
-    const traditional = language === "zh-tw" || language.startsWith("zh-hant");
-    const t = copy[traditional ? "zh-TW" : zh ? "zh" : "en"];
-    const locale = traditional ? "zh-TW" : zh ? "zh-CN" : "en-US";
-    const integer = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
-    const compact = new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 1 });
-    const precision = Math.min(8, Math.max(2,
-      ...(profile?.bins?.length ? [profile.step, profile.bins[0].lower].map(value => {
-        const text = Number(value).toFixed(8).replace(/0+$/, "");
-        return (text.split(".")[1] || "").length;
-      }) : [2])));
-    const prices = new Intl.NumberFormat(locale, { minimumFractionDigits: precision, maximumFractionDigits: precision });
-    const price = number => prices.format(number);
-    const pct = number => (number > 0 && number < 0.01 ? "<0.01%" : number.toFixed(2) + "%");
-    const root = svgNode("svg", { role: "img", "aria-label": t.chart, width: "100%",
-      "font-family": "inherit", style: "display:block;width:100%;max-width:100%;font-variant-numeric:tabular-nums" });
+    const integer=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
+    const compact=new Intl.NumberFormat('en-US',{notation:'compact',maximumFractionDigits:1});
+    const precision=Math.min(8,Math.max(2,...[profile.step,profile.bins?.[0]?.lower||0].map(v=>(Number(v).toFixed(8).replace(/0+$/,'').split('.')[1]||'').length)));
+    const money=new Intl.NumberFormat('en-US',{minimumFractionDigits:precision,maximumFractionDigits:precision});
+    const price=n=>money.format(n),pct=n=>n>0&&n<.01?'<0.01%':n.toFixed(2)+'%';
+    const root=el('svg',{role:'img','aria-label':'Price path and exact volume profile',width:'100%',tabindex:0,
+      style:'display:block;width:100%;max-width:100%;font-family:inherit;font-variant-numeric:tabular-nums'});
     host.replaceChildren(root);
-    let selected = -1;
-    let layout = null;
-    let redrawFrame = 0;
-    let lastLayoutKey = "";
-    let currentGroupCount = 0;
+    let layout=null,frame=0,lastKey='',selection={kind:null,index:-1};
 
-    function clearInspection() {
-      selected = -1;
-      if (layout) {
-        layout.inspection.replaceChildren();
-        root.removeAttribute("aria-valuetext");
-      }
-      options.onInspect?.(null);
+    function clearInspect(){if(!layout)return;layout.overlay.replaceChildren();root.removeAttribute('aria-valuetext');selection={kind:null,index:-1};options.onInspect?.(null);}
+    function tooltip(lines,x,y,width=190){
+      const g=layout.overlay,boxH=lines.length*17+16,bx=Math.max(6,Math.min(layout.width-width-6,x)),by=Math.max(layout.top,Math.min(layout.height-boxH-5,y));
+      g.append(el('rect',{x:bx,y:by,width,height:boxH,rx:6,fill:c.ink,opacity:.96}));
+      lines.forEach((line,i)=>text(g,bx+10,by+15+i*17,line,{fill:i?'#eaded7':'white','font-size':i?11:12,'font-weight':i?450:650}));
     }
 
-    function draw() {
-      const width = Math.max(220, Math.round(host.getBoundingClientRect().width || 640));
-      const narrow = width < 480;
-      root.style.height = 'var(--profile-chart-height, ' + (narrow ? 360 : 405) + 'px)';
-      const height = Math.max(200, Math.round(root.getBoundingClientRect().height || 405));
-      const key = width + ":" + height;
-      if (key === lastLayoutKey) return;
-      lastLayoutKey = key;
-      root.setAttribute("viewBox", "0 0 " + width + " " + height);
-      root.replaceChildren(svgNode("title", {}, t.chart), svgNode("desc", {}, t.instructions));
-      const bins = profile?.bins || [];
-      if (!bins.length) {
-        label(root, width / 2, height / 2, t.empty, { "text-anchor": "middle" });
-        return;
-      }
-      const complete = profile.complete === true;
-      const bottom = height - 49, top = 31;
-      const rowTarget = Math.max(12, Math.floor((bottom - top) / 6));
-      const { groups, stride } = groupBins(bins, rowTarget);
-      const low = groups[0].lower;
-      const high = groups[groups.length - 1].upper;
-      const axisLabelSize = Math.max(price(low).length, price(high).length);
-      const left = Math.min(width * 0.36, Math.max(43, axisLabelSize * 7.3 + 10));
-      const right = width - (narrow ? 55 : 74);
-      const y = value => bottom - (value - low) / (high - low) * (bottom - top);
-      const isShares = options.unit === "shares";
-      const getX = group => isShares ? group.shares : group.percent;
-      const max = Math.max(...groups.map(getX));
-      const xStep = niceStep(max / (narrow ? 3 : 5));
-      const xMax = Math.max(xStep, Math.ceil(max / xStep) * xStep);
-      const x = value => left + value / xMax * (right - left);
-
-      const valueArea = complete && options.showVA !== false ? profile.valueArea : null;
-      if (valueArea) {
-        root.append(svgNode("rect", { x: left, y: y(valueArea.upper), width: right - left,
-          height: y(valueArea.lower) - y(valueArea.upper), fill: colors.valueBand }));
-        root.append(svgNode("line", { x1: left - 2, x2: left - 2, y1: y(valueArea.upper), y2: y(valueArea.lower),
-          stroke: colors.value, "stroke-width": 2 }));
-      }
-
-      label(root, 0, 13, t.price, { "font-size": 12 });
-      if (stride > 1 || !complete) {
-        const note = [!complete ? t.partial : "", stride > 1 ? "≤" + stride + " " + t.perRow : ""].filter(Boolean).join(" · ");
-        label(root, right, 13, note, { "text-anchor": "end", "font-size": 12 });
-      }
-      for (let n = 0; n <= Math.round(xMax / xStep); n++) {
-        const value = n * xStep;
-        const at = x(value);
-        root.append(svgNode("line", { x1: at, x2: at, y1: top, y2: bottom, stroke: colors.grid,
-          "stroke-dasharray": n === 0 ? "none" : "2 4" }));
-        const text = isShares ? compact.format(value) : Number(value.toPrecision(4)) + "%";
-        label(root, at, bottom + 14, text, { "text-anchor": "middle", "font-size": 12 });
-      }
-      label(root, (left + right) / 2, height - 8, isShares ? t.shares : t.percent, { "text-anchor": "middle" });
-
-      const tickStep = Math.max(10 ** -precision, niceStep((high - low) / Math.min(8, Math.max(3, Math.floor((bottom - top) / 44)))));
-      const firstTick = Math.ceil(low / tickStep - 1e-8);
-      const finalTick = Math.floor(high / tickStep + 1e-8);
-      for (let i = 0; i < 16 && i <= finalTick - firstTick; i++) {
-        const v = (firstTick + i) * tickStep;
-        const at = y(v);
-        root.append(svgNode("line", { x1: left - 4, x2: left, y1: at, y2: at, stroke: colors.volumeLine }));
-        label(root, left - 8, at, price(v), { "text-anchor": "end", fill: ink, "font-size": 12 });
-      }
-      const peak = complete ? profile.poc : null;
-      for (const band of groups) {
-        if (!band.shares) continue;
-        const h = y(band.lower) - y(band.upper);
-        const gap = Math.min(2, h * 0.22);
-        const isPeak = peak && band.binCount === 1 && band.lower === peak.lower;
-        const inValue = valueArea && band.lower >= valueArea.lower && band.upper <= valueArea.upper;
-        root.append(svgNode("rect", { x: left, y: y(band.upper) + gap / 2,
-          width: Math.max(0.65, x(getX(band)) - left), height: Math.max(0.4, h - gap),
-          fill: isPeak ? colors.peak : inValue ? colors.value : colors.outside }));
-      }
-      root.append(svgNode("line", { x1: left, x2: right, y1: bottom, y2: bottom, stroke: colors.volumeLine }));
-
-      const marks = [];
-      if (peak) marks.push({ value: (peak.lower + peak.upper) / 2, text: "POC", color: colors.peak, dash: "2 3",
-        title: "POC [" + price(peak.lower) + ", " + price(peak.upper) + ")" });
-      if (complete && options.showVwap !== false && Number.isFinite(profile.vwap)) {
-        marks.push({ value: profile.vwap, text: "VWAP", color: colors.vwap, dash: "6 4", title: "VWAP " + price(profile.vwap) });
-      }
-      if (options.showClose !== false && Number.isFinite(options.close) && options.close > 0) {
-        marks.push({ value: options.close, text: t.close, color: ink, dash: "2 3", title: t.close + " " + price(options.close) });
-      }
-      for (const m of marks) m.at = Math.max(top, Math.min(bottom, y(m.value)));
-      marks.sort((a,b) => a.at - b.at);
-      let lastTag = top - 24;
-      for (const m of marks) {
-        m.tag = Math.max(top + 7, m.at, lastTag + 20);
-        lastTag = m.tag;
-      }
-      let nextTag = bottom + 13;
-      for (let i = marks.length - 1; i >= 0; i--) {
-        marks[i].tag = Math.min(marks[i].tag, nextTag - 20);
-        nextTag = marks[i].tag;
-      }
-      for (const m of marks) {
-        const outside = m.value < low || m.value > high;
-        if (!outside) root.append(svgNode("line", { x1: left, x2: right, y1: m.at, y2: m.at,
-          stroke: m.color, "stroke-width": 1.2, "stroke-dasharray": m.dash }));
-        const tagX = right + (narrow ? 6 : 10);
-        root.append(svgNode("path", { d: 'M' + right + ' ' + m.at + ' L' + tagX + ' ' + m.tag,
-          fill: "none", stroke: m.color }));
-        const box = svgNode("g", { "aria-label": m.title });
-        box.append(svgNode("title", {}, m.title));
-        const isPeak = m.text === "POC";
-        const tagWidth = (m.text === "VWAP" ? 42 : 38) + (outside ? 6 : 0);
-        box.append(svgNode("rect", { x: tagX, y: m.tag - 8, width: tagWidth, height: 16,
-          rx: 3, fill: isPeak ? colors.peak : "#fffdf8", stroke: isPeak ? colors.peak : m.color, "stroke-width": .8 }));
-        const arrow = outside ? (m.value < low ? "↓" : "↑") : "";
-        label(box, tagX + tagWidth / 2, m.tag + .4, m.text + arrow,
-          { "text-anchor": "middle", "font-size": 10, "font-weight": 650, fill: isPeak ? "white" : m.color });
-        root.append(box);
-      }
-      const inspection = svgNode("g", { "pointer-events": "none", "aria-hidden": "true" });
-      root.append(inspection);
-      currentGroupCount = groups.length;
-      layout = { left, right, top, bottom, y, groups, low, high, inspection, width, height };
-      root.setAttribute("role", "slider");
-      root.setAttribute("aria-orientation", "vertical");
-      root.setAttribute("aria-valuemin", "1");
-      root.setAttribute("aria-valuemax", String(currentGroupCount));
-      root.setAttribute("aria-valuenow", String(Math.max(1, Math.min(selected + 1, currentGroupCount))));
-      root.setAttribute("aria-label", t.chart + ". " + t.instructions);
-      root.setAttribute("tabindex", "0");
-      if (selected >= 0) inspect(Math.min(selected, groups.length - 1));
+    function inspectProfile(index){
+      if(!layout||!layout.rows[index])return;const b=layout.rows[index],top=layout.y(b.upper),bottom=layout.y(b.lower),mid=(top+bottom)/2;
+      selection={kind:'profile',index};layout.overlay.replaceChildren();
+      layout.overlay.append(el('rect',{x:layout.left,y:top,width:layout.plotRight-layout.left,height:Math.max(1,bottom-top),fill:'none',stroke:c.peak,'stroke-dasharray':'3 3'}));
+      tooltip(['$'+price(b.lower)+' – $'+price(b.upper),integer.format(b.shares)+' shares · '+pct(b.percent)],layout.profileRight+12,mid<layout.mainMiddle?mid+10:mid-60,205);
+      root.setAttribute('aria-valuetext','$'+price(b.lower)+' to $'+price(b.upper)+', '+integer.format(b.shares)+' shares, '+pct(b.percent));
+      options.onInspect?.({...b});
     }
 
-    function inspect(index) {
-      if (!layout) return;
-      const { groups, top, bottom, left, right, y, inspection } = layout;
-      const band = groups[index];
-      if (!band) return;
-      selected = index;
-      const mid = (y(band.upper) + y(band.lower)) / 2;
-      const range = "[" + price(band.lower) + ", " + price(band.upper) + ")";
-      const details = integer.format(band.shares) + (zh ? " 股" : " shares") + "  ·  " + pct(band.percent);
-      root.setAttribute("aria-valuenow", String(index + 1));
-      root.setAttribute("aria-valuetext", range + ", " + details);
-      inspection.replaceChildren();
-      inspection.append(svgNode("rect", { x: left, y: y(band.upper), width: right - left,
-        height: Math.max(1, y(band.lower) - y(band.upper)), fill: "none",
-        stroke: colors.highlight, "stroke-dasharray": "3 3", "stroke-width": 1 }));
-      const boxWidth = Math.min(layout.width - 8, Math.max(141, (range.length + 3) * 7, details.length * 7 + 18));
-      const boxX = Math.max(4, right - boxWidth - 5);
-      const boxY = mid < (top + bottom) / 2 ? Math.min(mid + 15, bottom - 45) : Math.max(top, mid - 59);
-      inspection.append(svgNode("rect", { x: boxX, y: boxY, width: boxWidth, height: 44, rx: 5, fill: ink }));
-      label(inspection, boxX + 9, boxY + 14, range, { fill: "white", "font-weight": 650 });
-      label(inspection, boxX + 9, boxY + 31, details, { fill: "#f4ded8", "font-size": 11 });
-      options.onInspect?.({ ...band });
+    function inspectTime(index){
+      if(!layout||!layout.timeBars[index])return;const b=layout.timeBars[index],x=layout.timeX(index),at=layout.y(b.close),stamp=new Date(b.ms).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'});
+      selection={kind:'time',index};layout.overlay.replaceChildren();
+      layout.overlay.append(el('line',{x1:x,x2:x,y1:layout.top,y2:layout.volumeBottom,stroke:c.cross,'stroke-dasharray':'3 4'}));
+      layout.overlay.append(el('circle',{cx:x,cy:at,r:4,fill:c.paper,stroke:c.ink,'stroke-width':2}));
+      tooltip([stamp+' ET · $'+price(b.close),'O '+price(b.open)+'  H '+price(b.high)+'  L '+price(b.low),compact.format(b.shares)+' shares · '+integer.format(b.trades)+' trades'],x+12,at-66,220);
+      root.setAttribute('aria-valuetext',stamp+' ET, close '+price(b.close)+', '+integer.format(b.shares)+' shares');
+      options.onInspect?.({time:b.start,close:b.close,shares:b.shares});
     }
 
-    function fromPointer(event) {
-      if (!layout) return;
-      const rect = root.getBoundingClientRect();
-      const px = (event.clientX - rect.left) * layout.width / rect.width;
-      const py = (event.clientY - rect.top) * layout.height / rect.height;
-      if (px < layout.left || px > layout.right || py < layout.top || py > layout.bottom) {
-        if (selected !== -1) clearInspection();
-        return;
+    function draw(){
+      const width=Math.max(300,Math.round(host.getBoundingClientRect().width||760)),narrow=width<620;
+      root.style.height='var(--profile-chart-height,'+(narrow?430:510)+'px)';
+      const height=Math.max(360,Math.round(root.getBoundingClientRect().height||510)),key=width+':'+height;
+      if(key===lastKey)return;lastKey=key;root.setAttribute('viewBox','0 0 '+width+' '+height);
+      root.replaceChildren(el('title',{},'Price path and exact volume profile'),el('desc',{},'Exact accepted SIP prints grouped by price and minute. Use arrow keys or pointer inspection.'));
+      const bins=profile?.bins||[];if(!bins.length){text(root,width/2,height/2,'No verified price bins available',{'text-anchor':'middle'});return;}
+      const timeBars=profile.timeBars?.length?profile.timeBars:(options.synthetic?syntheticBars(profile,options.syntheticClose):[]);
+      const left=12,plotRight=width-(narrow?54:68),top=narrow?47:31,volumeBottom=height-30,volumeTop=height-(narrow?92:106),mainBottom=volumeTop-18,mainMiddle=(top+mainBottom)/2;
+      const {rows,stride}=grouped(bins,Math.max(22,Math.floor((mainBottom-top)/5.3)));
+      const lows=[rows[0].lower,...timeBars.map(b=>b.low)],highs=[rows.at(-1).upper,...timeBars.map(b=>b.high)];
+      let low=Math.min(...lows),high=Math.max(...highs);const pad=Math.max(profile.step,(high-low)*.04);low=Math.max(0,low-pad);high+=pad;
+      const y=v=>mainBottom-(v-low)/(high-low)*(mainBottom-top),profileWidth=Math.min(narrow?width*.38:width*.32,285),profileRight=left+profileWidth;
+      const maxShares=Math.max(...rows.map(b=>b.shares));
+      const timeX=i=>timeBars.length<2?profileRight+(plotRight-profileRight)/2:left+i/(timeBars.length-1)*(plotRight-left);
+      const maxTimeVolume=Math.max(1,...timeBars.map(b=>b.shares)),volumeY=v=>volumeBottom-v/maxTimeVolume*(volumeBottom-volumeTop);
+      const valueArea=profile.complete&&options.showVA!==false?profile.valueArea:null;
+
+      if(valueArea)root.append(el('rect',{x:left,y:y(valueArea.upper),width:plotRight-left,height:y(valueArea.lower)-y(valueArea.upper),fill:c.valueBand}));
+      const tick=nice((high-low)/(narrow?5:7)),first=Math.ceil(low/tick),last=Math.floor(high/tick);
+      for(let n=first;n<=last&&n-first<12;n++){const v=n*tick,at=y(v);root.append(el('line',{x1:left,x2:plotRight,y1:at,y2:at,stroke:c.grid,'stroke-dasharray':'2 4'}));text(root,plotRight+7,at,price(v),{fill:c.ink,'font-size':11});}
+      root.append(el('line',{x1:left,x2:plotRight,y1:mainBottom,y2:mainBottom,stroke:c.grid}));
+      root.append(el('line',{x1:left,x2:plotRight,y1:volumeBottom,y2:volumeBottom,stroke:c.grid}));
+      text(root,left,13,options.synthetic?(narrow?'SYNTHETIC · NOT MARKET DATA':'SYNTHETIC PATH · NOT MARKET DATA'):(narrow?'EXACT PRINTS · 1 MIN':'EXACT ACCEPTED PRINTS · 1 MIN'),{fill:options.synthetic?c.peak:c.valueDark,'font-size':10,'font-weight':700,'letter-spacing':'.08em'});
+      text(root,narrow?left:plotRight,narrow?29:13,(narrow?'TRUE % OF VOLUME':'PROFILE = % OF WINDOW SHARES')+(stride>1?' · '+stride+' BINS/ROW':''),{'text-anchor':narrow?'start':'end','font-size':10,'font-weight':650,'letter-spacing':'.06em'});
+
+      for(const b of rows){
+        if(!b.shares)continue;const barTop=y(b.upper),barBottom=y(b.lower),h=Math.max(.7,barBottom-barTop-1),w=b.shares/maxShares*profileWidth;
+        const inValue=valueArea&&b.lower>=valueArea.lower&&b.upper<=valueArea.upper,isPeak=profile.poc&&b.lower<=profile.poc.lower&&b.upper>profile.poc.lower;
+        root.append(el('rect',{x:left,y:barTop+.5,width:Math.max(.8,w),height:h,fill:isPeak?c.peak:inValue?c.value:c.outside,opacity:isPeak?1:.86}));
+        if(w>42&&h>10)text(root,left+w-4,(barTop+barBottom)/2,pct(b.percent),{'text-anchor':'end','font-size':9,fill:isPeak?'white':c.ink,'font-weight':650});
       }
-      const value = layout.high - (py - layout.top) / (layout.bottom - layout.top) * (layout.high - layout.low);
-      const i = layout.groups.findIndex(b => value < b.upper);
-      const index = i < 0 ? currentGroupCount - 1 : i;
-      if (selected !== index) inspect(index);
+      if(timeBars.length){
+        const line=timeBars.map((b,i)=>(i?'L':'M')+timeX(i)+' '+y(b.close)).join(' ');
+        root.append(el('path',{d:line,fill:'none',stroke:c.ink,'stroke-width':narrow?1.35:1.6,'stroke-linejoin':'round','stroke-linecap':'round'}));
+        const barWidth=Math.max(1,Math.min(8,(plotRight-left)/Math.max(1,timeBars.length)*.68));
+        timeBars.forEach((b,i)=>{const x=timeX(i),fill=b.close>=b.open?c.up:c.down;root.append(el('rect',{x:x-barWidth/2,y:volumeY(b.shares),width:barWidth,height:volumeBottom-volumeY(b.shares),fill,opacity:.72}));});
+        const positions=[0,Math.floor((timeBars.length-1)/2),timeBars.length-1];
+        positions.forEach((i,index)=>{const b=timeBars[i],label=new Date(b.ms).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'});text(root,timeX(i),height-10,label,{fill:c.muted,'font-size':10,'text-anchor':index===0?'start':index===2?'end':'middle'});});
+        text(root,left,volumeTop-7,'TIME VOLUME',{'font-size':9,'font-weight':700,'letter-spacing':'.08em'});
+      }else text(root,(left+plotRight)/2,(top+mainBottom)/2,'Price path unavailable for this legacy profile',{'text-anchor':'middle','font-size':12});
+
+      const marks=[];
+      if(valueArea){marks.push({value:valueArea.upper,label:'VAH',color:c.valueDark,dash:'4 4'});marks.push({value:valueArea.lower,label:'VAL',color:c.valueDark,dash:'4 4'});}
+      if(profile.poc)marks.push({value:(profile.poc.lower+profile.poc.upper)/2,label:'POC',color:c.peak,dash:'6 3',strong:true});
+      if(options.showVwap!==false&&Number.isFinite(profile.vwap))marks.push({value:profile.vwap,label:'VWAP',color:c.vwap,dash:'2 4'});
+      if(timeBars.length)marks.push({value:timeBars.at(-1).close,label:'LAST',color:c.ink,dash:'2 3'});
+      marks.forEach(m=>{const at=y(m.value);if(at<top||at>mainBottom)return;root.append(el('line',{x1:left,x2:plotRight,y1:at,y2:at,stroke:m.color,'stroke-width':m.strong?1.5:1,'stroke-dasharray':m.dash}));
+        const w=m.label==='VWAP'?42:34;root.append(el('rect',{x:plotRight+4,y:at-8,width:w,height:16,rx:3,fill:m.strong?m.color:c.paper,stroke:m.color}));text(root,plotRight+4+w/2,at,m.label,{'text-anchor':'middle','font-size':9,'font-weight':700,fill:m.strong?'white':m.color});});
+
+      const overlay=el('g',{'pointer-events':'none','aria-hidden':'true'});root.append(overlay);
+      layout={width,height,left,plotRight,profileRight,top,mainBottom,mainMiddle,volumeTop,volumeBottom,y,rows,timeBars,timeX,overlay,low,high};
+      if(selection.kind==='profile')inspectProfile(Math.min(selection.index,rows.length-1));
+      if(selection.kind==='time')inspectTime(Math.min(selection.index,timeBars.length-1));
     }
 
-    root.addEventListener("pointermove", fromPointer);
-    root.addEventListener("pointerdown", fromPointer);
-    root.addEventListener("pointerleave", event => {
-      if (event.pointerType !== "touch" && document.activeElement !== root) clearInspection();
-    });
-    root.addEventListener("focus", () => {
-      if (selected < 0 && layout) {
-        const i = layout.groups.findIndex(b => profile?.poc && b.lower <= profile.poc.lower && b.upper > profile.poc.lower);
-        inspect(Math.max(0, i));
-      }
-    });
-    root.addEventListener("blur", clearInspection);
-    root.addEventListener("keydown", event => {
-      const keys = ["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft", "Home", "End", "Escape"];
-      if (!layout || !keys.includes(event.key)) return;
-      event.preventDefault();
-      if (event.key === "Escape") return clearInspection();
-      if (event.key === "Home") return inspect(0);
-      if (event.key === "End") return inspect(currentGroupCount - 1);
-      const direction = event.key === "ArrowUp" || event.key === "ArrowRight" ? 1 : -1;
-      inspect(Math.max(0, Math.min(currentGroupCount - 1, selected + direction)));
-    });
+    function pointer(event){
+      if(!layout)return;const r=root.getBoundingClientRect(),x=(event.clientX-r.left)*layout.width/r.width,y=(event.clientY-r.top)*layout.height/r.height;
+      if(y<layout.top||y>layout.volumeBottom||x<layout.left||x>layout.plotRight)return clearInspect();
+      if(x<=layout.profileRight&&y<=layout.mainBottom){const value=layout.high-(y-layout.top)/(layout.mainBottom-layout.top)*(layout.high-layout.low);const i=layout.rows.findIndex(b=>value<b.upper);inspectProfile(i<0?layout.rows.length-1:i);}
+      else if(layout.timeBars.length){const i=Math.max(0,Math.min(layout.timeBars.length-1,Math.round((x-layout.left)/(layout.plotRight-layout.left)*(layout.timeBars.length-1))));inspectTime(i);}
+    }
+    root.addEventListener('pointermove',pointer);root.addEventListener('pointerdown',pointer);
+    root.addEventListener('pointerleave',e=>{if(e.pointerType!=='touch'&&document.activeElement!==root)clearInspect();});
+    root.addEventListener('focus',()=>{if(selection.index<0&&layout){const i=layout.rows.findIndex(b=>profile.poc&&b.lower<=profile.poc.lower&&b.upper>profile.poc.lower);inspectProfile(Math.max(0,i));}});
+    root.addEventListener('blur',clearInspect);
+    root.addEventListener('keydown',event=>{if(!layout)return;const keys=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','Escape'];if(!keys.includes(event.key))return;event.preventDefault();if(event.key==='Escape')return clearInspect();
+      if(event.key==='ArrowLeft'||event.key==='ArrowRight'){if(!layout.timeBars.length)return;const base=selection.kind==='time'?selection.index:0;return inspectTime(Math.max(0,Math.min(layout.timeBars.length-1,event.key==='ArrowRight'?base+1:base-1)));}
+      const base=selection.kind==='profile'?selection.index:0;if(event.key==='Home')return inspectProfile(0);if(event.key==='End')return inspectProfile(layout.rows.length-1);inspectProfile(Math.max(0,Math.min(layout.rows.length-1,event.key==='ArrowUp'?base+1:base-1)));});
     draw();
-    const resize = () => {
-      cancelAnimationFrame(redrawFrame);
-      redrawFrame = requestAnimationFrame(draw);
-    };
-    const observer = typeof ResizeObserver === "function" ? new ResizeObserver(resize) : null;
-    observer?.observe(host);
-    if (!observer) window.addEventListener("resize", resize);
-    const cleanup = () => {
-      observer?.disconnect();
-      if (!observer) window.removeEventListener("resize", resize);
-      cancelAnimationFrame(redrawFrame);
-      root.remove();
-      instances.delete(host);
-    };
-    instances.set(host, cleanup);
-    return cleanup;
+    const resize=()=>{cancelAnimationFrame(frame);lastKey='';frame=requestAnimationFrame(draw);};
+    const observer=typeof ResizeObserver==='function'?new ResizeObserver(resize):null;observer?.observe(host);if(!observer)window.addEventListener('resize',resize);
+    const cleanup=()=>{observer?.disconnect();if(!observer)window.removeEventListener('resize',resize);cancelAnimationFrame(frame);root.remove();instances.delete(host);};
+    instances.set(host,cleanup);return cleanup;
   }
 
-  globalThis.ProfileChart = Object.freeze({ render });
+  globalThis.ProfileChart=Object.freeze({render});
 })();

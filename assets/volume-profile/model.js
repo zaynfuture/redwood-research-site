@@ -19,6 +19,7 @@
   const gapCodes = new Set(['pages_after_terminal', 'invalid_page', 'page_byte_budget_exceeded', 'total_byte_budget_exceeded',
     'missing_pagination_state', 'invalid_or_repeated_pagination', 'record_budget_exceeded', 'invalid_trade_record',
     'conflicting_trade_identity', 'pagination_incomplete', 'acquisition_incomplete', 'price_grid_budget_exceeded', 'no_eligible_trades']);
+  gapCodes.add('time_bar_budget_exceeded');
 
   function requireValue(condition, message) {
     if (!condition) throw new Error(message);
@@ -105,22 +106,51 @@
     requireValue(Array.isArray(doc.bins) && doc.bins.length <= MAX_BINS, 'Invalid price grid');
     let previous = null;
     let shares = 0;
-    let weightedLowerUnits = 0n;
-    let peak = 0;
-    let maxVolume = -1;
-    const bins = doc.bins.map((row, i) => {
+    let percentTotal = 0;
+    const bins = doc.bins.map(row => {
       requireValue(isRecord(row), 'Invalid price bin');
       const lo = priceUnits(row.lower), hi = priceUnits(row.upper);
       const volume = count(row.shares, MAX_SHARES, 'bin volume');
+      const percent = number(row.percent, 'bin percent', 0, 100);
       requireValue(hi === lo + unit && lo % unit === 0n && (previous === null || lo === previous), 'Misaligned price grid');
       previous = hi;
       shares += volume;
-      weightedLowerUnits += lo * BigInt(volume);
+      percentTotal += percent;
       requireValue(shares <= MAX_SHARES, 'Invalid share total');
-      if (volume > maxVolume) { peak = i; maxVolume = volume; }
-      return { lower: Number(row.lower), upper: Number(row.upper), shares: volume, percent: totalShares ? volume / totalShares * 100 : 0 };
+      return { lower: Number(row.lower), upper: Number(row.upper), shares: volume, percent };
     });
     requireValue(!bins.length || shares === totalShares, 'Share volumes do not reconcile');
+    requireValue(!bins.length || Math.abs(percentTotal - 100) < 0.000001, 'Bin percentages do not reconcile');
+    const timeBarsRaw = doc.time_bars;
+    let timeBars = [];
+    if (timeBarsRaw !== undefined) {
+      requireValue(Array.isArray(timeBarsRaw) && timeBarsRaw.length <= 10080 &&
+        doc.time_bar_seconds === 60 && doc.time_bar_method === 'exact_accepted_trade_aggregation',
+        'Invalid time-bar metadata');
+      let previousStart = null, timeShares = 0, timeTrades = 0;
+      timeBars = timeBarsRaw.map(row => {
+        requireValue(isRecord(row), 'Invalid time bar');
+        const at = timestamp(row.start);
+        requireValue(at.ns + 60000000000n > start.ns && at.ns <= end.ns && at.ns % 60000000000n === 0n &&
+          (previousStart === null || at.ns > previousStart), 'Invalid time-bar sequence');
+        previousStart = at.ns;
+        const openPrice = number(row.open, 'time open', Number.MIN_VALUE, 1000000000);
+        const highPrice = number(row.high, 'time high', Number.MIN_VALUE, 1000000000);
+        const lowPrice = number(row.low, 'time low', Number.MIN_VALUE, 1000000000);
+        const closePrice = number(row.close, 'time close', Number.MIN_VALUE, 1000000000);
+        const barShares = count(row.shares, MAX_SHARES, 'time-bar shares');
+        const trades = count(row.trades, MAX_TRADES, 'time-bar trades');
+        const barVwap = number(row.vwap, 'time-bar VWAP', Number.MIN_VALUE, 1000000000);
+        requireValue(barShares > 0 && trades > 0 && lowPrice <= openPrice && openPrice <= highPrice &&
+          lowPrice <= closePrice && closePrice <= highPrice && lowPrice <= barVwap && barVwap <= highPrice,
+          'Invalid time-bar values');
+        timeShares += barShares; timeTrades += trades;
+        requireValue(timeShares <= MAX_SHARES && timeTrades <= MAX_TRADES, 'Invalid time-bar totals');
+        return {start: row.start, ms: at.ms, open: openPrice, high: highPrice, low: lowPrice,
+          close: closePrice, shares: barShares, trades, vwap: barVwap};
+      });
+      requireValue(timeShares === totalShares && timeTrades === accepted, 'Time bars do not reconcile');
+    }
     requireValue(Array.isArray(doc.gaps) && doc.gaps.length <= 128 &&
       Array.isArray(doc.source_pages) && doc.source_pages.length <= 20, 'Invalid profile provenance');
     const gaps = [...new Set(doc.gaps.map(g => gapCodes.has(g?.code) ? g.code : 'source_data_gap'))];
@@ -132,7 +162,7 @@
     requireValue(['complete', 'invalid', 'partial', 'empty'].includes(doc.status) && typeof doc.complete === 'boolean', 'Invalid profile status');
     const complete = doc.status === 'complete';
     requireValue(complete === doc.complete, 'Conflicting profile status');
-    let poc = null, valueArea = null, vwap = null;
+    let poc = null, valueArea = null, vwap = null, analysis = null;
     if (complete) {
       requireValue(doc.pagination_complete === true && doc.data_quality_valid === true && sources.length && !gaps.length &&
         accepted > 0 && totalShares >= accepted && bins.length && totalShares > 0 && isRecord(doc.levels) &&
@@ -141,28 +171,40 @@
           doc.counts.received >= accepted && doc.counts.received <= MAX_TRADES)), 'Incomplete evidence for levels');
       const first = timestamp(doc.source_first_at).ns, last = timestamp(doc.source_last_at).ns;
       requireValue(start.ns <= first && first <= last && last <= end.ns, 'Invalid source observation time');
-      const p = bins[peak];
-      let low = peak, high = peak, included = p.shares;
-      while (included * 10 < totalShares * 7) {
-        const below = low > 0 ? bins[low - 1].shares : -1;
-        const above = high + 1 < bins.length ? bins[high + 1].shares : -1;
-        if (below >= above) { low--; included += below; } else { high++; included += above; }
-      }
       const reportedPoc = doc.levels.poc, area = doc.levels.value_area;
-      requireValue(isRecord(reportedPoc) && isRecord(area) && number(reportedPoc.lower, 'POC') === p.lower &&
-        number(reportedPoc.upper, 'POC') === p.upper && reportedPoc.shares === p.shares &&
-        number(area.lower, 'value area') === bins[low].lower && number(area.upper, 'value area') === bins[high].upper &&
-        area.shares === included && area.target_percent === 70, 'Reported levels conflict with the price grid');
+      requireValue(isRecord(reportedPoc) && isRecord(area), 'Missing backend levels');
+      const pocLower=number(reportedPoc.lower,'POC'),pocUpper=number(reportedPoc.upper,'POC');
+      const areaLower=number(area.lower,'value area'),areaUpper=number(area.upper,'value area');
+      const pocBin=bins.find(bin=>bin.lower===pocLower&&bin.upper===pocUpper);
+      const areaShares=count(area.shares,MAX_SHARES,'value-area shares');
+      const areaPercent=number(area.actual_percent,'value-area percent',0,100);
+      requireValue(pocBin&&reportedPoc.shares===pocBin.shares&&area.target_percent===70&&
+        bins.some(bin=>bin.lower===areaLower)&&bins.some(bin=>bin.upper===areaUpper)&&
+        areaLower<=pocLower&&pocUpper<=areaUpper&&areaShares<=totalShares&&
+        Math.abs(areaPercent-areaShares/totalShares*100)<0.000001,'Invalid backend levels');
       vwap = number(doc.levels.vwap, 'VWAP', Number.MIN_VALUE);
-      // Every trade falls inside its bin. The weighted sum of bin edges bounds the possible VWAP.
-      const weightedLower = Number(weightedLowerUnits) / 1e8 / totalShares;
-      const tolerance = Math.max(weightedLower + step, vwap) * Number.EPSILON * 3;
       requireValue(vwap >= bins[0].lower && vwap <= bins[bins.length - 1].upper &&
-        vwap >= weightedLower - tolerance && vwap <= weightedLower + step + tolerance, 'VWAP outside weighted bin bounds');
-      poc = { ...p };
-      valueArea = { lower: bins[low].lower, upper: bins[high].upper, shares: included, percent: included / totalShares * 100 };
+        Number.isFinite(vwap), 'VWAP outside profile bounds');
+      poc = { ...pocBin };
+      valueArea = { lower: areaLower, upper: areaUpper, shares: areaShares, percent: areaPercent };
+      if (doc.analysis != null) {
+        const view=doc.analysis,distribution=view.volume_distribution,position=view.position,reference=view.reference;
+        requireValue(isRecord(view)&&view.schema_version===1&&isRecord(distribution)&&isRecord(position)&&
+          isRecord(reference)&&reference.kind==='last_accepted_trade'&&['below','inside','above'].includes(position.poc)&&
+          ['below','inside','above'].includes(position.value_area)&&view.time_bar_count===timeBars.length,'Invalid backend analysis');
+        const normalized={};let distributionShares=0,distributionPercent=0;
+        for(const key of ['below','at','above']){const item=distribution[key];requireValue(isRecord(item),'Invalid backend distribution');
+          const itemShares=count(item.shares,MAX_SHARES,'distribution shares'),itemPercent=number(item.percent,'distribution percent',0,100);
+          distributionShares+=itemShares;distributionPercent+=itemPercent;normalized[key]={shares:itemShares,percent:itemPercent};}
+        const referencePrice=number(reference.price,'reference price',Number.MIN_VALUE,1000000000);
+        requireValue(distributionShares===totalShares&&Math.abs(distributionPercent-100)<0.000001&&
+          referencePrice===timeBars.at(-1)?.close&&reference.at===doc.source_last_at,'Backend analysis does not reconcile');
+        analysis={reference:{kind:reference.kind,price:referencePrice,at:reference.at},distribution:normalized,
+          position:{poc:position.poc,valueArea:position.value_area},timeBarCount:view.time_bar_count};
+      }
+      requireValue(!licensedDelivery||analysis,'Licensed delivery requires backend analysis');
     } else {
-      requireValue(doc.levels == null, 'Incomplete profile contains finalized levels');
+      requireValue(doc.levels == null && doc.analysis == null, 'Incomplete profile contains finalized analysis');
     }
     const networkChecked = doc.origin === 'alpaca_market_data' && doc.network_checked === true;
     const origin = networkChecked ? 'Alpaca SIP' : 'Supplied SIP pages';
@@ -170,8 +212,8 @@
       step, bins, totalShares, accepted, complete, status: doc.status, gaps, poc, valueArea, vwap, sources, source: origin,
       provider: doc.provider, feed: doc.feed, origin: doc.origin, networkChecked, asOf: doc.as_of,
       sourceFirstAt: doc.source_first_at || null, sourceLastAt: doc.source_last_at || null,
-      rightsDecision: doc.rights_decision, paginationComplete: doc.pagination_complete === true,
-      dataQualityValid: doc.data_quality_valid === true };
+      rightsDecision: doc.rights_decision, paginationComplete: doc.pagination_complete === true, timeBars,
+      dataQualityValid: doc.data_quality_valid === true, analysis };
   }
 
   function contextRow(ticker, metrics, date, sourceId) {
